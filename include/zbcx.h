@@ -43,7 +43,34 @@ void* zbcx_list_shift(zbcx_List* list);
 void zbcx_list_deinit(zbcx_List* list);
 
 typedef struct _zbcx_Task zbcx_Task;
-typedef struct _zbcx_Options zbcx_Options;
+
+typedef struct _zbcx_Options {
+	zbcx_List includes;
+	zbcx_List defines;
+	zbcx_List library_links;
+	const char* source_file;
+	const char* object_file;
+	int tab_size;
+	bool acc_err;
+	bool acc_stats;
+	bool one_column;
+	bool help;
+	bool preprocess;
+	bool write_asserts;
+	bool show_version;
+	bool slade_mode;
+
+	struct {
+    	const char* dir_path;
+    	int lifetime;
+    	bool enable;
+    	bool print;
+    	bool clear;
+	} cache;
+} zbcx_Options;
+
+zbcx_Options zbcx_options_init(void);
+void zbcx_options_deinit(zbcx_Options*);
 
 #ifdef __cplusplus
 }
