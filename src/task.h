@@ -739,7 +739,7 @@ enum {
    STORAGE_WORLD,
    STORAGE_GLOBAL
 };
- 
+
 struct var {
    struct object object;
    struct name* name;

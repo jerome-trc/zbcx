@@ -95,7 +95,7 @@ static void read_block( struct parse* parse, struct stmt_reading* reading ) {
 static struct block* alloc_block( void ) {
    struct block* block = mem_alloc( sizeof( *block ) );
    block->node.type = NODE_BLOCK;
-   list_init( &block->stmts );
+   zbcx_list_init( &block->stmts );
    return block;
 }
 
@@ -123,7 +123,7 @@ static void read_block_item( struct parse* parse, struct stmt_reading* reading,
    reading->node = NULL;
    read_stmt( parse, reading, block );
    if ( reading->node ) {
-      list_append( &block->stmts, reading->node );
+      zbcx_list_append( &block->stmts, reading->node );
    }
 }
 
@@ -257,7 +257,7 @@ static void read_default_case( struct parse* parse,
 
 static void read_label( struct parse* parse, struct stmt_reading* reading ) {
    struct label* label = alloc_label( parse->tk_text, &parse->tk_pos );
-   list_append( reading->labels, label );
+   zbcx_list_append( reading->labels, label );
    p_test_tk( parse, TK_ID );
    p_read_tk( parse );
    p_test_tk( parse, TK_COLON );
@@ -272,7 +272,7 @@ static struct label* alloc_label( const char* name, struct pos* pos ) {
    label->name = name;
    label->buildmsg = NULL;
    label->point = NULL;
-   list_init( &label->users );
+   zbcx_list_init( &label->users );
    return label;
 }
 
@@ -446,8 +446,8 @@ static void read_for( struct parse* parse, struct stmt_reading* reading ) {
    p_read_tk( parse );
    struct for_stmt* stmt = mem_alloc( sizeof( *stmt ) );
    stmt->node.type = NODE_FOR;
-   list_init( &stmt->init );
-   list_init( &stmt->post );
+   zbcx_list_init( &stmt->init );
+   zbcx_list_init( &stmt->post );
    init_cond( &stmt->cond );
    stmt->body = NULL;
    stmt->jump_break = NULL;
@@ -489,7 +489,7 @@ static void read_for_init( struct parse* parse, struct for_stmt* stmt ) {
          struct expr_reading expr;
          p_init_expr_reading( &expr, false, false, false, true );
          p_read_expr( parse, &expr );
-         list_append( &stmt->init, expr.output_node );
+         zbcx_list_append( &stmt->init, expr.output_node );
          if ( parse->tk == TK_COMMA ) {
             p_read_tk( parse );
          }
@@ -507,7 +507,7 @@ static void read_for_post( struct parse* parse, struct for_stmt* stmt ) {
       struct expr_reading expr;
       p_init_expr_reading( &expr, false, false, false, true );
       p_read_expr( parse, &expr );
-      list_append( &stmt->post, expr.output_node );
+      zbcx_list_append( &stmt->post, expr.output_node );
       if ( parse->tk == TK_COMMA ) {
          p_read_tk( parse );
       }
@@ -791,7 +791,7 @@ static struct buildmsg* read_buildmsg( struct parse* parse,
    struct buildmsg* buildmsg = mem_alloc( sizeof( *buildmsg ) );
    buildmsg->expr = expr.output_node;
    buildmsg->block = reading->block_node;
-   list_init( &buildmsg->usages );
+   zbcx_list_init( &buildmsg->usages );
    return buildmsg;
 }
 
@@ -799,12 +799,12 @@ static void read_expr_stmt( struct parse* parse,
    struct stmt_reading* reading ) {
    struct expr_stmt* stmt = mem_alloc( sizeof( *stmt ) );
    stmt->node.type = NODE_EXPR_STMT;
-   list_init( &stmt->expr_list );
+   zbcx_list_init( &stmt->expr_list );
    while ( true ) {
       struct expr_reading expr;
       p_init_expr_reading( &expr, false, false, false, false );
       p_read_expr( parse, &expr );
-      list_append( &stmt->expr_list, expr.output_node );
+      zbcx_list_append( &stmt->expr_list, expr.output_node );
       if ( parse->tk == TK_COMMA ) {
          p_read_tk( parse );
       }
@@ -841,7 +841,7 @@ static void read_assert( struct parse* parse, struct stmt_reading* reading ) {
    p_read_tk( parse );
    reading->node = &assert->node;
    if ( ! assert->is_static ) {
-      list_append( &parse->task->runtime_asserts, assert );
+      zbcx_list_append( &parse->task->runtime_asserts, assert );
    }
 }
 

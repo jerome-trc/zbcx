@@ -155,11 +155,11 @@ int s_spec( struct semantic* semantic, int spec ) {
 
 void s_test( struct semantic* semantic ) {
    test_bcs( semantic );
-   if ( list_size( &semantic->main_lib->scripts ) >
+   if ( zbcx_list_size( &semantic->main_lib->scripts ) >
       semantic->lang_limits->max_scripts ) {
       s_diag( semantic, DIAG_FILE | DIAG_ERR, &semantic->main_lib->file_pos,
          "too many scripts (have %d, but maximum is %d)",
-         list_size( &semantic->main_lib->scripts ),
+         zbcx_list_size( &semantic->main_lib->scripts ),
          semantic->lang_limits->max_scripts );
       s_bail( semantic );
    }
@@ -186,11 +186,11 @@ static void test_bcs( struct semantic* semantic ) {
    // TODO: Refactor this.
    if ( ! semantic->main_lib->importable ) {
       struct list_iter i;
-      list_iterate( &semantic->main_lib->vars, &i );
-      while ( ! list_end( &i ) ) {
-         struct var* var = list_data( &i );
+      zbcx_list_iterate( &semantic->main_lib->vars, &i );
+      while ( ! zbcx_list_end( &i ) ) {
+         struct var* var = zbcx_list_data( &i );
          var->hidden = true;
-         list_next( &i );
+         zbcx_list_next( &i );
       }
    }
 }
@@ -199,10 +199,10 @@ static void test_bcs( struct semantic* semantic ) {
 static void test_imported_acs_libs( struct semantic* semantic ) {
    semantic->trigger_err = true;
    struct list_iter i;
-   list_iterate( &semantic->main_lib->dynamic_acs, &i );
-   while ( ! list_end( &i ) ) {
-      struct library* lib = list_data( &i );
-      list_next( &i );
+   zbcx_list_iterate( &semantic->main_lib->dynamic_acs, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct library* lib = zbcx_list_data( &i );
+      zbcx_list_next( &i );
    }
    semantic->trigger_err = false;
 }
@@ -220,12 +220,12 @@ static void init_builtin_namespace_aliases( struct semantic* semantic ) {
 
 static void bind_names( struct semantic* semantic ) {
    struct list_iter i;
-   list_iterate( &semantic->main_lib->dynamic_bcs, &i );
-   while ( ! list_end( &i ) ) {
-      semantic->lib = list_data( &i );
+   zbcx_list_iterate( &semantic->main_lib->dynamic_bcs, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      semantic->lib = zbcx_list_data( &i );
       bind_namespace( semantic, semantic->lib->upmost_ns_fragment );
       hide_private_objects( semantic );
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    semantic->lib = semantic->main_lib;
    bind_namespace( semantic, semantic->lib->upmost_ns_fragment );
@@ -243,10 +243,10 @@ static void bind_namespace( struct semantic* semantic,
    semantic->ns_fragment = fragment;
    semantic->ns = fragment->ns;
    struct list_iter i;
-   list_iterate( &fragment->objects, &i );
-   while ( ! list_end( &i ) ) {
-      bind_namespace_object( semantic, list_data( &i ) );
-      list_next( &i );
+   zbcx_list_iterate( &fragment->objects, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      bind_namespace_object( semantic, zbcx_list_data( &i ) );
+      zbcx_list_next( &i );
    }
 }
 
@@ -358,9 +358,9 @@ static void bind_func( struct semantic* semantic, struct func* func ) {
 
 static void show_private_objects( struct semantic* semantic ) {
    struct list_iter i;
-   list_iterate( &semantic->lib->private_objects, &i );
-   while ( ! list_end( &i ) ) {
-      struct object* object = list_data( &i );
+   zbcx_list_iterate( &semantic->lib->private_objects, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct object* object = zbcx_list_data( &i );
       switch ( object->node.type ) {
       case NODE_CONSTANT:
          bind_private_name(
@@ -393,7 +393,7 @@ static void show_private_objects( struct semantic* semantic ) {
       default:
          UNREACHABLE();
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
 }
 
@@ -435,9 +435,9 @@ static void show_namespace( struct ns_fragment* fragment ) {
 
 static void hide_private_objects( struct semantic* semantic ) {
    struct list_iter i;
-   list_iterate( &semantic->lib->private_objects, &i );
-   while ( ! list_end( &i ) ) {
-      struct object* object = list_data( &i );
+   zbcx_list_iterate( &semantic->lib->private_objects, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct object* object = zbcx_list_data( &i );
       switch ( object->node.type ) {
       case NODE_CONSTANT:
          unbind_name(
@@ -470,7 +470,7 @@ static void hide_private_objects( struct semantic* semantic ) {
       default:
          UNREACHABLE();
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
 }
 
@@ -508,11 +508,11 @@ static void hide_namespace( struct ns_fragment* fragment ) {
 static void perform_usings( struct semantic* semantic ) {
    // Execute using directives in imported libraries.
    struct list_iter i;
-   list_iterate( &semantic->main_lib->dynamic_bcs, &i );
-   while ( ! list_end( &i ) ) {
-      semantic->lib = list_data( &i );
+   zbcx_list_iterate( &semantic->main_lib->dynamic_bcs, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      semantic->lib = zbcx_list_data( &i );
       perform_namespace_usings( semantic, semantic->lib->upmost_ns_fragment );
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    // Execute using directives in main library.
    semantic->lib = semantic->main_lib;
@@ -526,15 +526,15 @@ static void perform_namespace_usings( struct semantic* semantic,
    semantic->ns_fragment = fragment;
    semantic->ns = fragment->ns;
    struct list_iter i;
-   list_iterate( &fragment->usings, &i );
-   while ( ! list_end( &i ) ) {
-      s_perform_using( semantic, list_data( &i ) );
-      list_next( &i );
+   zbcx_list_iterate( &fragment->usings, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      s_perform_using( semantic, zbcx_list_data( &i ) );
+      zbcx_list_next( &i );
    }
-   list_iterate( &fragment->fragments, &i );
-   while ( ! list_end( &i ) ) {
-      perform_namespace_usings( semantic, list_data( &i ) );
-      list_next( &i );
+   zbcx_list_iterate( &fragment->fragments, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      perform_namespace_usings( semantic, zbcx_list_data( &i ) );
+      zbcx_list_next( &i );
    }
    semantic->ns_fragment = parent_fragment;
    semantic->ns = parent_fragment->ns;
@@ -588,10 +588,10 @@ static void import_all( struct semantic* semantic, struct ns* ns,
 static void import_selection( struct semantic* semantic, struct ns* ns,
    struct using_dirc* dirc ) {
    struct list_iter i;
-   list_iterate( &dirc->items, &i );
-   while ( ! list_end( &i ) ) {
-      import_item( semantic, ns, dirc, list_data( &i ) );
-      list_next( &i );
+   zbcx_list_iterate( &dirc->items, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      import_item( semantic, ns, dirc, zbcx_list_data( &i ) );
+      zbcx_list_next( &i );
    }
 }
 
@@ -917,10 +917,10 @@ static void test_objects( struct semantic* semantic ) {
 
 static void test_all( struct semantic* semantic ) {
    struct list_iter i;
-   list_iterate( &semantic->main_lib->dynamic_bcs, &i );
-   while ( ! list_end( &i ) ) {
-      test_lib( semantic, list_data( &i ) );
-      list_next( &i );
+   zbcx_list_iterate( &semantic->main_lib->dynamic_bcs, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      test_lib( semantic, zbcx_list_data( &i ) );
+      zbcx_list_next( &i );
    }
    test_lib( semantic, semantic->main_lib );
 }
@@ -1013,10 +1013,10 @@ static void test_namespace_object( struct semantic* semantic,
 static void test_objects_bodies( struct semantic* semantic ) {
    semantic->trigger_err = true;
    struct list_iter i;
-   list_iterate( &semantic->main_lib->dynamic_bcs, &i );
-   while ( ! list_end( &i ) ) {
-      test_objects_bodies_lib( semantic, list_data( &i ) );
-      list_next( &i );
+   zbcx_list_iterate( &semantic->main_lib->dynamic_bcs, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      test_objects_bodies_lib( semantic, zbcx_list_data( &i ) );
+      zbcx_list_next( &i );
    }
    test_objects_bodies_lib( semantic, semantic->main_lib );
 }
@@ -1038,9 +1038,9 @@ static void test_objects_bodies_ns( struct semantic* semantic,
    semantic->ns_fragment = fragment;
    semantic->strong_type = fragment->strict;
    struct list_iter i;
-   list_iterate( &fragment->runnables, &i );
-   while ( ! list_end( &i ) ) {
-      struct node* node = list_data( &i );
+   zbcx_list_iterate( &fragment->runnables, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct node* node = zbcx_list_data( &i );
       switch ( node->type ) {
       case NODE_SCRIPT:
          s_test_script( semantic,
@@ -1065,7 +1065,7 @@ static void test_objects_bodies_ns( struct semantic* semantic,
          UNREACHABLE();
          s_bail( semantic );
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    semantic->ns_fragment = parent_fragment;
    semantic->ns = parent_fragment->ns;
@@ -1074,28 +1074,28 @@ static void test_objects_bodies_ns( struct semantic* semantic,
 
 static void check_dup_scripts( struct semantic* semantic ) {
    struct list_iter i;
-   list_iterate( &semantic->main_lib->scripts, &i );
-   while ( ! list_end( &i ) ) {
+   zbcx_list_iterate( &semantic->main_lib->scripts, &i );
+   while ( ! zbcx_list_end( &i ) ) {
       struct list_iter k = i;
-      list_next( &k );
-      while ( ! list_end( &k ) ) {
-         match_dup_script( semantic, list_data( &k ), list_data( &i ), false );
-         list_next( &k );
+      zbcx_list_next( &k );
+      while ( ! zbcx_list_end( &k ) ) {
+         match_dup_script( semantic, zbcx_list_data( &k ), zbcx_list_data( &i ), false );
+         zbcx_list_next( &k );
       }
       // Check for duplicates in an imported library.
       struct list_iter j;
-      list_iterate( &semantic->main_lib->dynamic, &j );
-      while ( ! list_end( &j ) ) {
-         struct library* lib = list_data( &j );
-         list_iterate( &lib->scripts, &k );
-         while ( ! list_end( &k ) ) {
-            match_dup_script( semantic, list_data( &i ), list_data( &k ),
+      zbcx_list_iterate( &semantic->main_lib->dynamic, &j );
+      while ( ! zbcx_list_end( &j ) ) {
+         struct library* lib = zbcx_list_data( &j );
+         zbcx_list_iterate( &lib->scripts, &k );
+         while ( ! zbcx_list_end( &k ) ) {
+            match_dup_script( semantic, zbcx_list_data( &i ), zbcx_list_data( &k ),
                true );
-            list_next( &k );
+            zbcx_list_next( &k );
          }
-         list_next( &j );
+         zbcx_list_next( &j );
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
 }
 
@@ -1148,9 +1148,9 @@ static void match_dup_script( struct semantic* semantic, struct script* script,
 static void assign_script_numbers( struct semantic* semantic ) {
    int named_script_number = -1;
    struct list_iter i;
-   list_iterate( &semantic->main_lib->scripts, &i );
-   while ( ! list_end( &i ) ) {
-      struct script* script = list_data( &i );
+   zbcx_list_iterate( &semantic->main_lib->scripts, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct script* script = zbcx_list_data( &i );
       if ( script->named_script ) {
          script->assigned_number = named_script_number;
          --named_script_number;
@@ -1158,7 +1158,7 @@ static void assign_script_numbers( struct semantic* semantic ) {
       else {
          script->assigned_number = script->number->value;
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
 }
 

@@ -270,17 +270,17 @@ void str_clear( struct str* str ) {
 
 static struct list_link* alloc_list_link( void* data );
 
-void list_init( struct list* list ) {
+void zbcx_list_init( struct list* list ) {
    list->head = NULL;
    list->tail = NULL;
    list->size = 0;
 }
 
-int list_size( struct list* list ) {
+int zbcx_list_size( struct list* list ) {
    return list->size;
 }
 
-void* list_head( struct list* list ) {
+void* zbcx_list_head( struct list* list ) {
    if ( list->head ) {
       return list->head->data;
    }
@@ -289,7 +289,7 @@ void* list_head( struct list* list ) {
    }
 }
 
-void* list_tail( struct list* list ) {
+void* zbcx_list_tail( struct list* list ) {
    if ( list->tail ) {
       return list->tail->data;
    }
@@ -298,7 +298,7 @@ void* list_tail( struct list* list ) {
    }
 }
 
-void list_append( struct list* list, void* data ) {
+void zbcx_list_append( struct list* list, void* data ) {
    struct list_link* link = alloc_list_link( data );
    if ( list->head ) {
       list->tail->next = link;
@@ -317,7 +317,7 @@ static struct list_link* alloc_list_link( void* data ) {
    return link;
 }
 
-void list_prepend( struct list* list, void* data ) {
+void zbcx_list_prepend( struct list* list, void* data ) {
    struct list_link* link = alloc_list_link( data );
    link->next = list->head;
    list->head = link;
@@ -327,23 +327,23 @@ void list_prepend( struct list* list, void* data ) {
    ++list->size;
 }
 
-void list_iterate( struct list* list, struct list_iter* iter ) {
+void zbcx_list_iterate( struct list* list, struct list_iter* iter ) {
    iter->prev = NULL;
    iter->link = list->head;
 }
 
-bool list_end( struct list_iter* iter ) {
+bool zbcx_list_end( struct list_iter* iter ) {
    return ( iter->link == NULL );
 }
 
-void list_next( struct list_iter* iter ) {
+void zbcx_list_next( struct list_iter* iter ) {
    if ( iter->link ) {
       iter->prev = iter->link;
       iter->link = iter->link->next;
    }
 }
 
-void* list_data( struct list_iter* iter ) {
+void* zbcx_list_data( struct list_iter* iter ) {
    if ( iter->link ) {
       return iter->link->data;
    }
@@ -352,7 +352,7 @@ void* list_data( struct list_iter* iter ) {
    }
 }
 
-void list_insert_after( struct list* list,
+void zbcx_list_insert_after( struct list* list,
    struct list_iter* iter, void* data ) {
    if ( iter->link ) {
       struct list_link* link = alloc_list_link( data );
@@ -364,11 +364,11 @@ void list_insert_after( struct list* list,
       ++list->size;
    }
    else {
-      list_append( list, data );
+      zbcx_list_append( list, data );
    }
 }
 
-void list_insert_before( struct list* list,
+void zbcx_list_insert_before( struct list* list,
    struct list_iter* iter, void* data ) {
    if ( iter->prev ) {
       struct list_link* link = alloc_list_link( data );
@@ -380,11 +380,11 @@ void list_insert_before( struct list* list,
       ++list->size;
    }
    else {
-      list_prepend( list, data );
+      zbcx_list_prepend( list, data );
    }
 }
 
-void* list_replace( struct list* list,
+void* zbcx_list_replace( struct list* list,
    struct list_iter* iter, void* data ) {
    void* replaced_data = NULL;
    if ( iter->link ) {
@@ -394,7 +394,7 @@ void* list_replace( struct list* list,
    return replaced_data;
 }
 
-void list_merge( struct list* receiver, struct list* giver ) {
+void zbcx_list_merge( struct list* receiver, struct list* giver ) {
    if ( giver->head ) {
       if ( receiver->head ) {
          receiver->tail->next = giver->head;
@@ -404,11 +404,11 @@ void list_merge( struct list* receiver, struct list* giver ) {
       }
       receiver->tail = giver->tail;
       receiver->size += giver->size;
-      list_init( giver );
+      zbcx_list_init( giver );
    }
 }
 
-void* list_shift( struct list* list ) {
+void* zbcx_list_shift( struct list* list ) {
    if ( list->head ) {
       void* data = list->head->data;
       struct list_link* next_link = list->head->next;
@@ -425,7 +425,7 @@ void* list_shift( struct list* list ) {
    }
 }
 
-void list_deinit( struct list* list ) {
+void zbcx_list_deinit( struct list* list ) {
    struct list_link* link = list->head;
    while ( link ) {
       struct list_link* next = link->next;
@@ -612,17 +612,6 @@ bool c_is_absolute_path( const char* path ) {
 #elif defined __linux__
 #include <linux/limits.h> // And on Linux it is in linux/limits.h
 #endif
-
-bool c_read_full_path( const char* path, struct str* str ) {
-   str_grow( str, PATH_MAX + 1 );
-   if ( realpath( path, str->value ) ) {
-      str->length = strlen( str->value );
-      return true;
-   }
-   else {
-      return false;
-   }
-}
 
 void fs_strip_trailing_pathsep( struct str* path ) {
    while ( path->length - 1 > 0 &&

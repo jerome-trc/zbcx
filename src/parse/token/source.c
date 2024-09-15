@@ -138,14 +138,14 @@ void p_load_included_source( struct parse* parse, const char* file_path,
 
 static void append_file( struct library* lib, struct file_entry* file ) {
    struct list_iter i;
-   list_iterate( &lib->files, &i );
-   while ( ! list_end( &i ) ) {
-      if ( list_data( &i ) == file ) {
+   zbcx_list_iterate( &lib->files, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      if ( zbcx_list_data( &i ) == file ) {
          return;
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
-   list_append( &lib->files, file );
+   zbcx_list_append( &lib->files, file );
 }
 
 static void init_request( struct request* request,

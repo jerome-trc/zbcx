@@ -220,17 +220,17 @@ void cache_add( struct cache* cache, struct library* lib ) {
    }
    // Update entry.
    struct list_iter i;
-   list_iterate( &lib->files, &i );
-   while ( ! list_end( &i ) ) {
-      struct file_entry* file = list_data( &i );
+   zbcx_list_iterate( &lib->files, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct file_entry* file = zbcx_list_data( &i );
       struct cache_dependency* dep = cache_alloc_dependency( cache,
          file->full_path.value );
       cache_append_dependency( entry, dep );
-      list_next( &i );
+      zbcx_list_next( &i );
    }
-   list_iterate( &lib->import_dircs, &i );
-   while ( ! list_end( &i ) ) {
-      struct import_dirc* dirc = list_data( &i );
+   zbcx_list_iterate( &lib->import_dircs, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct import_dirc* dirc = zbcx_list_data( &i );
       struct file_query query;
       t_init_file_query( &query, cache->task->library_main->file,
          dirc->file_path );
@@ -244,7 +244,7 @@ void cache_add( struct cache* cache, struct library* lib ) {
       struct cache_dependency* dep = cache_alloc_dependency( cache,
          query.file->full_path.value );
       cache_append_dependency( entry, dep );
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    entry->lib = lib;
    entry->compile_time = cache->task->compile_time;

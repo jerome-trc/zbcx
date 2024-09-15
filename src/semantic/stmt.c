@@ -139,10 +139,10 @@ static void test_block( struct semantic* semantic, struct stmt_test* test,
       bind_builtin_aliases( semantic, builtin_aliases );
    }
    struct list_iter i;
-   list_iterate( &block->stmts, &i );
-   while ( ! list_end( &i ) ) {
-      test_block_item( semantic, test, list_data( &i ) );
-      list_next( &i );
+   zbcx_list_iterate( &block->stmts, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      test_block_item( semantic, test, zbcx_list_data( &i ) );
+      zbcx_list_next( &i );
    }
    if ( ! test->manual_scope ) {
       s_pop_scope( semantic );
@@ -598,9 +598,9 @@ static void warn_switch_skipped_init( struct semantic* semantic,
    struct block* block ) {
    struct var* last_var = NULL;
    struct list_iter i;
-   list_iterate( &block->stmts, &i );
-   while ( ! list_end( &i ) ) {
-      struct node* node = list_data( &i );
+   zbcx_list_iterate( &block->stmts, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct node* node = zbcx_list_data( &i );
       if ( node->type == NODE_VAR ) {
          struct var* var = ( struct var* ) node;
          if ( var->initial ) {
@@ -614,7 +614,7 @@ static void warn_switch_skipped_init( struct semantic* semantic,
          node->type == NODE_CASE_DEFAULT ) {
          break;
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    if ( last_var ) {
       s_diag( semantic, DIAG_POS, &last_var->object.pos,
@@ -683,9 +683,9 @@ static void test_for( struct semantic* semantic, struct stmt_test* test,
    s_add_scope( semantic, false );
    // Initialization.
    struct list_iter i;
-   list_iterate( &stmt->init, &i );
-   while ( ! list_end( &i ) ) {
-      struct node* node = list_data( &i );
+   zbcx_list_iterate( &stmt->init, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct node* node = zbcx_list_data( &i );
       if ( node->type == NODE_EXPR ) {
          struct expr_test expr;
          s_init_expr_test( &expr, false, false );
@@ -707,19 +707,19 @@ static void test_for( struct semantic* semantic, struct stmt_test* test,
          UNREACHABLE();
          s_bail( semantic );
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    // Condition.
    if ( stmt->cond.u.node ) {
       test_cond( semantic, &stmt->cond );
    }
    // Post expressions.
-   list_iterate( &stmt->post, &i );
-   while ( ! list_end( &i ) ) {
+   zbcx_list_iterate( &stmt->post, &i );
+   while ( ! zbcx_list_end( &i ) ) {
       struct expr_test expr;
       s_init_expr_test( &expr, false, false );
-      s_test_expr( semantic, &expr, list_data( &i ) );
-      list_next( &i );
+      s_test_expr( semantic, &expr, zbcx_list_data( &i ) );
+      zbcx_list_next( &i );
    }
    struct stmt_test body;
    s_init_stmt_test( &body, test );
@@ -985,15 +985,15 @@ static void test_goto( struct semantic* semantic, struct stmt_test* test,
    struct goto_stmt* stmt ) {
    stmt->buildmsg = semantic->func_test->enclosing_buildmsg;
    struct list_iter i;
-   list_iterate( semantic->func_test->labels, &i );
-   while ( ! list_end( &i ) ) {
-      struct label* label = list_data( &i );
+   zbcx_list_iterate( semantic->func_test->labels, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct label* label = zbcx_list_data( &i );
       if ( strcmp( label->name, stmt->label_name ) == 0 ) {
          stmt->label = label;
-         list_append( &label->users, stmt ); 
+         zbcx_list_append( &label->users, stmt ); 
          break;
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    if ( ! stmt->label ) {
       s_diag( semantic, DIAG_POS_ERR, &stmt->label_name_pos,
@@ -1098,7 +1098,7 @@ static void test_buildmsg_block( struct semantic* semantic,
    struct builtin_aliases aliases;
    init_builtin_aliases( semantic, &aliases, BUILTINALIASESUSER_BUILDMSG );
    test_block( semantic, &block_test, &aliases, buildmsg->block );
-   if ( ! list_size( &buildmsg->usages ) ) {
+   if ( ! zbcx_list_size( &buildmsg->usages ) ) {
       s_diag( semantic, DIAG_POS_ERR, &buildmsg->block->pos,
          "unused message-building block" );
       s_bail( semantic );
@@ -1130,26 +1130,26 @@ static struct buildmsg* find_buildmsg( struct stmt_test* start,
 static void test_expr_stmt( struct semantic* semantic,
    struct expr_stmt* stmt ) {
    struct list_iter i;
-   list_iterate( &stmt->expr_list, &i );
-   bool require_assign = ( list_size( &stmt->expr_list ) > 1 );
-   while ( ! list_end( &i ) ) {
-      struct expr* expr = list_data( &i );
+   zbcx_list_iterate( &stmt->expr_list, &i );
+   bool require_assign = ( zbcx_list_size( &stmt->expr_list ) > 1 );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct expr* expr = zbcx_list_data( &i );
       struct expr_test expr_test;
       s_init_expr_test( &expr_test, false, false );
       s_test_expr( semantic, &expr_test, expr );
-      list_next( &i );
+      zbcx_list_next( &i );
    }
 }
 
 static void check_dup_label( struct semantic* semantic ) {
    struct list_iter i;
-   list_iterate( semantic->func_test->labels, &i );
-   while ( ! list_end( &i ) ) {
-      struct label* label = list_data( &i );
-      list_next( &i );
+   zbcx_list_iterate( semantic->func_test->labels, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct label* label = zbcx_list_data( &i );
+      zbcx_list_next( &i );
       struct list_iter k = i;
-      while ( ! list_end( &k ) ) {
-         struct label* other_label = list_data( &k );
+      while ( ! zbcx_list_end( &k ) ) {
+         struct label* other_label = zbcx_list_data( &k );
          if ( strcmp( label->name, other_label->name ) == 0 ) {
             s_diag( semantic, DIAG_POS_ERR, &label->pos,
                "duplicate label `%s`", label->name );
@@ -1157,26 +1157,26 @@ static void check_dup_label( struct semantic* semantic ) {
                "label already found here" );
             s_bail( semantic );
          }
-         list_next( &k );
+         zbcx_list_next( &k );
       }
    }
 }
 
 static void test_goto_in_msgbuild_block( struct semantic* semantic ) {
    struct list_iter i;
-   list_iterate( semantic->func_test->labels, &i );
-   while ( ! list_end( &i ) ) {
-      struct label* label = list_data( &i );
+   zbcx_list_iterate( semantic->func_test->labels, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct label* label = zbcx_list_data( &i );
       struct list_iter k;
-      list_iterate( &label->users, &k );
-      while ( ! list_end( &k ) ) {
-         struct goto_stmt* stmt = list_data( &k );
+      zbcx_list_iterate( &label->users, &k );
+      while ( ! zbcx_list_end( &k ) ) {
+         struct goto_stmt* stmt = zbcx_list_data( &k );
          if ( stmt->buildmsg != label->buildmsg ) {
             diag_leave( semantic, &stmt->pos, ( stmt->buildmsg == NULL ) );
             s_bail( semantic );
          }
-         list_next( &k );
+         zbcx_list_next( &k );
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
 }

@@ -62,7 +62,7 @@ int main( int argc, char* argv[] ) {
    str_init( &compiler_dir );
    if ( c_read_full_path( argv[ 0 ], &compiler_dir ) ) {
       c_extract_dirname( &compiler_dir );
-      list_append( &options.includes, compiler_dir.value );
+      zbcx_list_append( &options.includes, compiler_dir.value );
    }
    // When no object file is explicitly specified, create the object file in
    // the directory of the source file, giving it the name that of the source
@@ -105,9 +105,9 @@ int main( int argc, char* argv[] ) {
 }
 
 static void init_options( struct options* options ) {
-   list_init( &options->includes );
-   list_init( &options->defines );
-   list_init( &options->library_links );
+   zbcx_list_init( &options->includes );
+   zbcx_list_init( &options->defines );
+   zbcx_list_init( &options->library_links );
    options->source_file = NULL;
    options->object_file = NULL;
    // Default tab size for now is 4, since it's a common indentation size.
@@ -161,7 +161,7 @@ static bool read_options( struct options* options, char** argv ) {
          strcmp( option, "I" ) == 0 ) {
          if ( *args ) {
             strip_rslash( *args );
-            list_append( &options->includes, *args );
+            zbcx_list_append( &options->includes, *args );
             ++args;
          }
          else {
@@ -239,7 +239,7 @@ static bool read_options( struct options* options, char** argv ) {
       }
       else if ( strcmp( option, "D" ) == 0 ) {
          if ( *args ) {
-            list_append( &options->defines, *args );
+            zbcx_list_append( &options->defines, *args );
             ++args;
          }
          else {
@@ -250,7 +250,7 @@ static bool read_options( struct options* options, char** argv ) {
       }
       else if ( strcmp( option, "l" ) == 0 ) {
          if ( *args ) {
-            list_append( &options->library_links, *args );
+            zbcx_list_append( &options->library_links, *args );
             ++args;
          }
          else {
@@ -429,18 +429,18 @@ static void print_acc_stats( struct task* task, struct parse* parse,
    // being compiled, and another for imported functions.
    int imported_funcs = 0;
    struct list_iter i;
-   list_iterate( &task->library_main->dynamic, &i );
-   while ( ! list_end( &i ) ) {
-      struct library* lib = list_data( &i );
+   zbcx_list_iterate( &task->library_main->dynamic, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct library* lib = zbcx_list_data( &i );
       struct list_iter k;
-      list_iterate( &lib->funcs, &k );
-      while ( ! list_end( &k ) ) {
-         struct func* func = list_data( &k );
+      zbcx_list_iterate( &lib->funcs, &k );
+      while ( ! zbcx_list_end( &k ) ) {
+         struct func* func = zbcx_list_data( &k );
          struct func_user* impl = func->impl;
          imported_funcs += ( int ) ( impl->usage > 0 );
-         list_next( &k );
+         zbcx_list_next( &k );
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    t_diag( task, DIAG_NONE,
       "\"%s\":\n"
@@ -452,18 +452,18 @@ static void print_acc_stats( struct task* task, struct parse* parse,
       parse->main_lib_lines,
       parse->main_lib_lines == 1 ? "" : "s",
       parse->included_lines,
-      list_size( &task->library_main->funcs ),
-      list_size( &task->library_main->funcs ) == 1 ? "" : "s",
+      zbcx_list_size( &task->library_main->funcs ),
+      zbcx_list_size( &task->library_main->funcs ) == 1 ? "" : "s",
       imported_funcs,
-      list_size( &task->library_main->scripts ),
-      list_size( &task->library_main->scripts ) == 1 ? "" : "s"
+      zbcx_list_size( &task->library_main->scripts ),
+      zbcx_list_size( &task->library_main->scripts ) == 1 ? "" : "s"
    );
    int script_counts[ SCRIPT_TYPE_TOTAL ] = { 0 };
-   list_iterate( &task->library_main->scripts, &i );
-   while ( ! list_end( &i ) ) {
-      struct script* script = list_data( &i );
+   zbcx_list_iterate( &task->library_main->scripts, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct script* script = zbcx_list_data( &i );
       ++script_counts[ script->type ];
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    for ( int i = 0; i < ARRAY_SIZE( script_counts ); ++i ) {
       if ( script_counts[ i ] > 0 ) {
@@ -476,9 +476,9 @@ static void print_acc_stats( struct task* task, struct parse* parse,
    int world_arrays = 0;
    int global_vars = 0;
    int global_arrays = 0;
-   list_iterate( &task->library_main->vars, &i );
-   while ( ! list_end( &i ) ) {
-      struct var* var = list_data( &i );
+   zbcx_list_iterate( &task->library_main->vars, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct var* var = zbcx_list_data( &i );
       switch ( var->storage ) {
       case STORAGE_MAP:
          ++map_vars;
@@ -502,7 +502,7 @@ static void print_acc_stats( struct task* task, struct parse* parse,
       default:
          break;
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    t_diag( task, DIAG_NONE,
       "  %d global variable%s\n"

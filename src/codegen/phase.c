@@ -45,16 +45,16 @@ void c_init( struct codegen* codegen, struct task* task ) {
    codegen->free_pcode_args = NULL;
    codegen->assert_prefix = NULL;
    codegen->runtime_index = 0;
-   list_init( &codegen->used_strings );
-   list_init( &codegen->vars );
-   list_init( &codegen->scalars );
-   list_init( &codegen->arrays );
-   list_init( &codegen->imported_vars );
-   list_init( &codegen->imported_scalars );
-   list_init( &codegen->imported_arrays );
-   list_init( &codegen->funcs );
-   list_init( &codegen->shary.vars );
-   list_init( &codegen->shary.dims );
+   zbcx_list_init( &codegen->used_strings );
+   zbcx_list_init( &codegen->vars );
+   zbcx_list_init( &codegen->scalars );
+   zbcx_list_init( &codegen->arrays );
+   zbcx_list_init( &codegen->imported_vars );
+   zbcx_list_init( &codegen->imported_scalars );
+   zbcx_list_init( &codegen->imported_arrays );
+   zbcx_list_init( &codegen->funcs );
+   zbcx_list_init( &codegen->shary.vars );
+   zbcx_list_init( &codegen->shary.dims );
    codegen->shary.index = 0;
    codegen->shary.dim_counter = 0;
    codegen->shary.size = 0;
@@ -80,7 +80,7 @@ void c_publish( struct codegen* codegen ) {
    assign_indexes( codegen );
    patch_initz( codegen );
    if ( codegen->task->options->write_asserts &&
-      list_size( &codegen->task->runtime_asserts ) > 0 ) {
+      zbcx_list_size( &codegen->task->runtime_asserts ) > 0 ) {
       create_assert_strings( codegen );
    }
    c_write_chunk_obj( codegen );
@@ -90,91 +90,91 @@ static void clarify_vars( struct codegen* codegen ) {
    int count = 0;
    // Variables.
    struct list_iter i;
-   list_iterate( &codegen->task->library_main->vars, &i );
-   while ( ! list_end( &i ) ) {
-      struct var* var = list_data( &i );
+   zbcx_list_iterate( &codegen->task->library_main->vars, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct var* var = zbcx_list_data( &i );
       if ( var->storage == STORAGE_MAP && ! var->hidden ) {
-         list_append( &codegen->vars, var );
+         zbcx_list_append( &codegen->vars, var );
          ++count;
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    // Imported variables.
-   list_iterate( &codegen->task->library_main->dynamic, &i );
-   while ( ! list_end( &i ) ) {
-      struct library* lib = list_data( &i );
+   zbcx_list_iterate( &codegen->task->library_main->dynamic, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct library* lib = zbcx_list_data( &i );
       struct list_iter k;
-      list_iterate( &lib->vars, &k );
-      while ( ! list_end( &k ) ) {
-         struct var* var = list_data( &k );
+      zbcx_list_iterate( &lib->vars, &k );
+      while ( ! zbcx_list_end( &k ) ) {
+         struct var* var = zbcx_list_data( &k );
          if ( var->storage == STORAGE_MAP && var->used ) {
-            list_append( &codegen->imported_vars, var );
+            zbcx_list_append( &codegen->imported_vars, var );
             ++count;
          }
-         list_next( &k );
+         zbcx_list_next( &k );
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    // External variables.
-   list_iterate( &codegen->task->library_main->external_vars, &i );
-   while ( ! list_end( &i ) ) {
-      struct var* var = list_data( &i );
+   zbcx_list_iterate( &codegen->task->library_main->external_vars, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct var* var = zbcx_list_data( &i );
       if ( var->imported && var->used ) {
-         list_append( &codegen->imported_vars, var );
+         zbcx_list_append( &codegen->imported_vars, var );
          ++count;
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    // Take shared array into account.
    ++count;
    // Store in the shared array those private arrays and private
    // structure-variables whose address is taken.
-   list_iterate( &codegen->task->library_main->vars, &i );
-   while ( ! list_end( &i ) ) {
-      struct var* var = list_data( &i );
+   zbcx_list_iterate( &codegen->task->library_main->vars, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct var* var = zbcx_list_data( &i );
       if ( var->storage == STORAGE_MAP && ( var->desc == DESC_ARRAY ||
          var->desc == DESC_STRUCTVAR ) && var->hidden && var->addr_taken ) {
-         list_append( &codegen->shary.vars, var );
+         zbcx_list_append( &codegen->shary.vars, var );
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    // Allocate dimension counter. It is better to use a variable than it is
    // to use an element of the shared array because it reduces the number of
    // instructions we need to use when dealing with array references.
-   if ( list_size( &codegen->shary.vars ) > 0 && count < MAX_MAP_LOCATIONS ) {
+   if ( zbcx_list_size( &codegen->shary.vars ) > 0 && count < MAX_MAP_LOCATIONS ) {
       alloc_dim_counter_var( codegen );
       ++count;
    }
    // Hidden variables.
-   list_iterate( &codegen->task->library_main->vars, &i );
-   while ( ! list_end( &i ) ) {
-      struct var* var = list_data( &i );
+   zbcx_list_iterate( &codegen->task->library_main->vars, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct var* var = zbcx_list_data( &i );
       if ( var->storage == STORAGE_MAP && var->hidden && ! var->addr_taken ) {
          if ( count < MAX_MAP_LOCATIONS ) {
-            list_append( &codegen->vars, var );
+            zbcx_list_append( &codegen->vars, var );
             ++count;
          }
          // When an index is no longer available, store the hidden variable
          // in the shared array.
          else {
-            list_append( &codegen->shary.vars, var );
+            zbcx_list_append( &codegen->shary.vars, var );
          }
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    // Shared array is used and needs to be reserved.
-   if ( list_size( &codegen->shary.vars ) > 1 ) {
+   if ( zbcx_list_size( &codegen->shary.vars ) > 1 ) {
       codegen->shary.used = true;
    }
    // When the shared array contains a single variable and the variable is not
    // used by a reference, give the index of the shared array to the variable.
-   else if ( list_size( &codegen->shary.vars ) == 1 ) {
-      struct var* var = list_head( &codegen->shary.vars );
+   else if ( zbcx_list_size( &codegen->shary.vars ) == 1 ) {
+      struct var* var = zbcx_list_head( &codegen->shary.vars );
       if ( var->addr_taken ) {
          codegen->shary.used = true;
       }
       else {
-         list_append( &codegen->vars, var );
+         zbcx_list_append( &codegen->vars, var );
       }
    }
    // Shared array not needed.
@@ -207,59 +207,59 @@ static void clarify_funcs( struct codegen* codegen ) {
       func->impl = t_alloc_func_user();
       func->name = t_extend_name( codegen->task->root_name, "." );
       codegen->null_handler = func;
-      list_append( &codegen->funcs, func );
+      zbcx_list_append( &codegen->funcs, func );
    }
    // Imported functions.
    struct list_iter i;
-   list_iterate( &codegen->task->library_main->dynamic, &i );
-   while ( ! list_end( &i ) ) {
-      struct library* lib = list_data( &i );
+   zbcx_list_iterate( &codegen->task->library_main->dynamic, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct library* lib = zbcx_list_data( &i );
       struct list_iter k;
-      list_iterate( &lib->funcs, &k );
-      while ( ! list_end( &k ) ) {
-         struct func* func = list_data( &k );
+      zbcx_list_iterate( &lib->funcs, &k );
+      while ( ! zbcx_list_end( &k ) ) {
+         struct func* func = zbcx_list_data( &k );
          struct func_user* impl = func->impl;
          if ( impl->usage ) {
-            list_append( &codegen->funcs, func );
+            zbcx_list_append( &codegen->funcs, func );
          }
-         list_next( &k );
+         zbcx_list_next( &k );
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    // External functions.
-   list_iterate( &codegen->task->library_main->external_funcs, &i );
-   while ( ! list_end( &i ) ) {
-      struct func* func = list_data( &i );
+   zbcx_list_iterate( &codegen->task->library_main->external_funcs, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct func* func = zbcx_list_data( &i );
       struct func_user* impl = func->impl;
       if ( func->imported && impl->usage ) {
-         list_append( &codegen->funcs, list_data( &i ) );
+         zbcx_list_append( &codegen->funcs, zbcx_list_data( &i ) );
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    // Functions.
-   list_iterate( &codegen->task->library_main->funcs, &i );
-   while ( ! list_end( &i ) ) {
-      struct func* func = list_data( &i );
+   zbcx_list_iterate( &codegen->task->library_main->funcs, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct func* func = zbcx_list_data( &i );
       if ( ! func->hidden ) {
-         list_append( &codegen->funcs, func );
+         zbcx_list_append( &codegen->funcs, func );
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    // Hidden functions.
-   list_iterate( &codegen->task->library_main->funcs, &i );
-   while ( ! list_end( &i ) ) {
-      struct func* func = list_data( &i );
+   zbcx_list_iterate( &codegen->task->library_main->funcs, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct func* func = zbcx_list_data( &i );
       if ( func->hidden ) {
-         list_append( &codegen->funcs, func );
+         zbcx_list_append( &codegen->funcs, func );
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    // In Little-E, the field of the function-call instruction that stores the
    // index of the function is a byte in size, allowing up to 256 different
    // functions to be called.
    // NOTE: Maybe automatically switch to the Big-E format?
    if ( codegen->task->library_main->format == FORMAT_LITTLE_E &&
-      list_size( &codegen->funcs ) > MAX_LIB_FUNCS ) {
+      zbcx_list_size( &codegen->funcs ) > MAX_LIB_FUNCS ) {
       t_diag( codegen->task, DIAG_ERR | DIAG_FILE,
          &codegen->task->library_main->file_pos,
          "library uses over maximum %d functions", MAX_LIB_FUNCS );
@@ -272,13 +272,13 @@ static void clarify_funcs( struct codegen* codegen ) {
 static void assign_func_indexes( struct codegen* codegen ) {
    int index = 0;
    struct list_iter i;
-   list_iterate( &codegen->funcs, &i );
-   while ( ! list_end( &i ) ) {
-      struct func* func = list_data( &i );
+   zbcx_list_iterate( &codegen->funcs, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct func* func = zbcx_list_data( &i );
       struct func_user* impl = func->impl;
       impl->index = index;
       ++index;
-      list_next( &i );
+      zbcx_list_next( &i );
    }
 }
 
@@ -304,18 +304,18 @@ static void setup_diminfo( struct codegen* codegen ) {
    codegen->shary.diminfo_offset = codegen->shary.size;
    // Variables.
    struct list_iter i;
-   list_iterate( &codegen->task->library_main->vars, &i );
-   while ( ! list_end( &i ) ) {
-      struct var* var = list_data( &i );
+   zbcx_list_iterate( &codegen->task->library_main->vars, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct var* var = zbcx_list_data( &i );
       if ( var->dim && var->addr_taken ) {
          var->diminfo_start = append_dim( codegen, var->dim );
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    // Structures.
-   list_iterate( &codegen->task->structures, &i );
-   while ( ! list_end( &i ) ) {
-      struct structure* structure = list_data( &i );
+   zbcx_list_iterate( &codegen->task->structures, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct structure* structure = zbcx_list_data( &i );
       struct structure_member* member = structure->member;
       while ( member ) {
          if ( member->dim && member->addr_taken ) {
@@ -323,7 +323,7 @@ static void setup_diminfo( struct codegen* codegen ) {
          }
          member = member->next;
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    codegen->shary.size += codegen->shary.diminfo_size;
 }
@@ -331,17 +331,17 @@ static void setup_diminfo( struct codegen* codegen ) {
 static int append_dim( struct codegen* codegen, struct dim* candidate_dim ) {
    int offset = codegen->shary.diminfo_offset;
    struct list_iter i;
-   list_iterate( &codegen->shary.dims, &i );
-   while ( ! list_end( &i ) ) {
+   zbcx_list_iterate( &codegen->shary.dims, &i );
+   while ( ! zbcx_list_end( &i ) ) {
       if ( same_dim( candidate_dim, i ) ) {
          return offset;
       }
       ++offset;
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    struct dim* dim = candidate_dim;
    while ( dim ) {
-      list_append( &codegen->shary.dims, dim );
+      zbcx_list_append( &codegen->shary.dims, dim );
       ++codegen->shary.diminfo_size;
       dim = dim->next;
    }
@@ -349,24 +349,24 @@ static int append_dim( struct codegen* codegen, struct dim* candidate_dim ) {
 }
 
 static bool same_dim( struct dim* dim, struct list_iter i ) {
-   while ( dim != NULL && ! list_end( &i ) &&
-      t_dim_size( dim ) == t_dim_size( list_data( &i ) ) ) {
-      list_next( &i );
+   while ( dim != NULL && ! zbcx_list_end( &i ) &&
+      t_dim_size( dim ) == t_dim_size( zbcx_list_data( &i ) ) ) {
+      zbcx_list_next( &i );
       dim = dim->next;
    }
-   return ( dim == NULL && list_end( &i ) );
+   return ( dim == NULL && zbcx_list_end( &i ) );
 }
 
 static void setup_data( struct codegen* codegen ) {
    codegen->shary.data_offset = codegen->shary.size;
    struct list_iter i;
-   list_iterate( &codegen->shary.vars, &i );
-   while ( ! list_end( &i ) ) {
-      struct var* var = list_data( &i );
+   zbcx_list_iterate( &codegen->shary.vars, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct var* var = zbcx_list_data( &i );
       var->index = codegen->shary.size;
       var->in_shared_array = true;
       codegen->shary.size += var->size;
-      list_next( &i );
+      zbcx_list_next( &i );
    }
 }
 
@@ -377,15 +377,15 @@ static void patch_initz( struct codegen* codegen ) {
 
 static void patch_initz_list( struct codegen* codegen, struct list* vars ) {
    struct list_iter i;
-   list_iterate( vars, &i );
-   while ( ! list_end( &i ) ) {
-      struct var* var = list_data( &i );
+   zbcx_list_iterate( vars, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct var* var = zbcx_list_data( &i );
       struct value* value = var->value;
       while ( value ) {
          patch_value( codegen, value );
          value = value->next;
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
 }
 
@@ -444,71 +444,71 @@ static void sort_vars( struct codegen* codegen ) {
    struct list zerohidden_scalars;
    struct list nonzerohidden_scalars;
    struct list hidden_arrays;
-   list_init( &arrays );
-   list_init( &zero_scalars );
-   list_init( &nonzero_scalars );
-   list_init( &zerohidden_scalars );
-   list_init( &nonzerohidden_scalars );
-   list_init( &hidden_arrays );
-   while ( list_size( &codegen->vars ) > 0 ) {
-      struct var* var = list_shift( &codegen->vars );
+   zbcx_list_init( &arrays );
+   zbcx_list_init( &zero_scalars );
+   zbcx_list_init( &nonzero_scalars );
+   zbcx_list_init( &zerohidden_scalars );
+   zbcx_list_init( &nonzerohidden_scalars );
+   zbcx_list_init( &hidden_arrays );
+   while ( zbcx_list_size( &codegen->vars ) > 0 ) {
+      struct var* var = zbcx_list_shift( &codegen->vars );
       // Arrays.
       if ( c_is_public_array( var ) ) {
-         list_append( &arrays, var );
+         zbcx_list_append( &arrays, var );
       }
       // Scalars, with-no-value.
       else if ( c_is_public_zero_scalar_var( var ) ) {
-         list_append( &zero_scalars, var );
+         zbcx_list_append( &zero_scalars, var );
       }
       // Scalars, with-value.
       else if ( c_is_public_nonzero_scalar_var( var ) ) {
-         list_append( &nonzero_scalars, var );
+         zbcx_list_append( &nonzero_scalars, var );
       }
       // Scalars, with-value, hidden.
       else if ( c_is_hidden_nonzero_scalar_var( var ) ) {
-         list_append( &zerohidden_scalars, var );
+         zbcx_list_append( &zerohidden_scalars, var );
       }
       // Scalars, with-no-value, hidden.
       else if ( c_is_hidden_zero_scalar_var( var ) ) {
-         list_append( &nonzerohidden_scalars, var );
+         zbcx_list_append( &nonzerohidden_scalars, var );
       }
       // Arrays, hidden.
       else if ( c_is_hidden_array( var ) ) {
-         list_append( &hidden_arrays, var );
+         zbcx_list_append( &hidden_arrays, var );
       }
       else {
          UNREACHABLE();
          c_bail( codegen );
       }
    }
-   list_merge( &codegen->vars, &arrays );
-   list_merge( &codegen->vars, &zero_scalars );
-   list_merge( &codegen->vars, &nonzero_scalars );
-   list_merge( &codegen->vars, &zerohidden_scalars );
-   list_merge( &codegen->vars, &nonzerohidden_scalars );
-   list_merge( &codegen->vars, &hidden_arrays );
+   zbcx_list_merge( &codegen->vars, &arrays );
+   zbcx_list_merge( &codegen->vars, &zero_scalars );
+   zbcx_list_merge( &codegen->vars, &nonzero_scalars );
+   zbcx_list_merge( &codegen->vars, &zerohidden_scalars );
+   zbcx_list_merge( &codegen->vars, &nonzerohidden_scalars );
+   zbcx_list_merge( &codegen->vars, &hidden_arrays );
    struct list_iter i;
-   list_iterate( &codegen->vars, &i );
-   while ( ! list_end( &i ) ) {
-      struct var* var = list_data( &i );
+   zbcx_list_iterate( &codegen->vars, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct var* var = zbcx_list_data( &i );
       if ( c_is_scalar_var( var ) ) {
-         list_append( &codegen->scalars, var );
+         zbcx_list_append( &codegen->scalars, var );
       }
       else {
-         list_append( &codegen->arrays, var );
+         zbcx_list_append( &codegen->arrays, var );
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
-   list_iterate( &codegen->imported_vars, &i );
-   while ( ! list_end( &i ) ) {
-      struct var* var = list_data( &i );
+   zbcx_list_iterate( &codegen->imported_vars, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct var* var = zbcx_list_data( &i );
       if ( c_is_scalar_var( var ) ) {
-         list_append( &codegen->imported_scalars, var );
+         zbcx_list_append( &codegen->imported_scalars, var );
       }
       else {
-         list_append( &codegen->imported_arrays, var );
+         zbcx_list_append( &codegen->imported_arrays, var );
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
 }
 
@@ -601,20 +601,20 @@ static void assign_indexes( struct codegen* codegen ) {
    int index = 0;
    // Variables.
    struct list_iter i;
-   list_iterate( &codegen->vars, &i );
-   while ( ! list_end( &i ) ) {
-      struct var* var = list_data( &i );
+   zbcx_list_iterate( &codegen->vars, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct var* var = zbcx_list_data( &i );
       var->index = index;
       ++index;
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    // Imported variables.
-   list_iterate( &codegen->imported_vars, &i );
-   while ( ! list_end( &i ) ) {
-      struct var* var = list_data( &i );
+   zbcx_list_iterate( &codegen->imported_vars, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct var* var = zbcx_list_data( &i );
       var->index = index;
       ++index;
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    // Shared array.
    if ( codegen->shary.used ) {
@@ -629,16 +629,16 @@ static void assign_indexes( struct codegen* codegen ) {
 
 static void create_assert_strings( struct codegen* codegen ) {
    struct list_iter i;
-   list_iterate( &codegen->task->runtime_asserts, &i );
-   while ( ! list_end( &i ) ) {
-      struct assert* assert = list_data( &i );
+   zbcx_list_iterate( &codegen->task->runtime_asserts, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct assert* assert = zbcx_list_data( &i );
       // Create file string.
       const char* file = t_decode_pos_file( codegen->task, &assert->pos );
       struct indexed_string* string = t_intern_string( codegen->task,
          ( char* ) file, strlen( file ) );
       string->used = true;
       assert->file = string;
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    // Create standard message-prefix string.
    static const char* message_prefix = "assertion failure";
@@ -653,7 +653,7 @@ void c_append_string( struct codegen* codegen,
    if ( ! ( string->index_runtime >= 0 ) ) {
       string->index_runtime = codegen->runtime_index;
       ++codegen->runtime_index;
-      list_append( &codegen->used_strings, string );
+      zbcx_list_append( &codegen->used_strings, string );
    }
 }
 

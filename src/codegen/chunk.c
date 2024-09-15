@@ -108,26 +108,26 @@ void c_write_chunk_obj( struct codegen* codegen ) {
    if ( codegen->task->library_main->wadauthor ) {
       int count = 0;
       struct list_iter i;
-      list_iterate( &codegen->task->library_main->scripts, &i );
-      while ( ! list_end( &i ) ) {
-         struct script* script = list_data( &i );
+      zbcx_list_iterate( &codegen->task->library_main->scripts, &i );
+      while ( ! zbcx_list_end( &i ) ) {
+         struct script* script = zbcx_list_data( &i );
          if ( script->assigned_number >= 0 &&
             script->assigned_number <= 255 ) {
             ++count;
          }
-         list_next( &i );
+         zbcx_list_next( &i );
       }
       c_add_int( codegen, count );
-      list_iterate( &codegen->task->library_main->scripts, &i );
-      while ( ! list_end( &i ) ) {
-         struct script* script = list_data( &i );
+      zbcx_list_iterate( &codegen->task->library_main->scripts, &i );
+      while ( ! zbcx_list_end( &i ) ) {
+         struct script* script = zbcx_list_data( &i );
          if ( script->assigned_number >= 0 &&
             script->assigned_number <= 255 ) {
             c_add_int( codegen, script->assigned_number );
             c_add_int( codegen, codegen->dummy_script_offset );
             c_add_int( codegen, script->num_param );
          }
-         list_next( &i );
+         zbcx_list_next( &i );
       }
    }
    else {
@@ -151,7 +151,7 @@ void c_write_chunk_obj( struct codegen* codegen ) {
 }
 
 static void do_sptr( struct codegen* codegen ) {
-   if ( ! list_size( &codegen->task->library_main->scripts ) ) {
+   if ( ! zbcx_list_size( &codegen->task->library_main->scripts ) ) {
       return;
    }
    struct {
@@ -162,27 +162,27 @@ static void do_sptr( struct codegen* codegen ) {
    } entry;
    c_add_str( codegen, "SPTR" );
    c_add_int( codegen, sizeof( entry ) *
-      list_size( &codegen->task->library_main->scripts ) );
+      zbcx_list_size( &codegen->task->library_main->scripts ) );
    struct list_iter i;
-   list_iterate( &codegen->task->library_main->scripts, &i );
-   while ( ! list_end( &i ) ) {
-      struct script* script = list_data( &i );
+   zbcx_list_iterate( &codegen->task->library_main->scripts, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct script* script = zbcx_list_data( &i );
       entry.number = ( short ) script->assigned_number;
       entry.type = ( char ) script->type;
       entry.num_param = ( char ) script->num_param;
       entry.offset = script->offset;
       c_add_sized( codegen, &entry, sizeof( entry ) );
-      list_next( &i );
+      zbcx_list_next( &i );
    }
 }
 
 static void do_svct( struct codegen* codegen ) {
    int count = 0;
    struct list_iter i;
-   list_iterate( &codegen->task->library_main->scripts, &i );
-   while ( ! list_end( &i ) ) {
-      count += ( int ) svct_script( list_data( &i ) );
-      list_next( &i );
+   zbcx_list_iterate( &codegen->task->library_main->scripts, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      count += ( int ) svct_script( zbcx_list_data( &i ) );
+      zbcx_list_next( &i );
    }
    if ( ! count ) {
       return;
@@ -193,15 +193,15 @@ static void do_svct( struct codegen* codegen ) {
    } entry;
    c_add_str( codegen, "SVCT" );
    c_add_int( codegen, sizeof( entry ) * count );
-   list_iterate( &codegen->task->library_main->scripts, &i );
-   while ( ! list_end( &i ) ) {
-      struct script* script = list_data( &i );
+   zbcx_list_iterate( &codegen->task->library_main->scripts, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct script* script = zbcx_list_data( &i );
       if ( svct_script( script ) ) {
          entry.number = ( short ) script->assigned_number;
          entry.size = ( short ) script->size;
          c_add_sized( codegen, &entry, sizeof( entry ) );
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
 }
 
@@ -213,13 +213,13 @@ inline static bool svct_script( struct script* script ) {
 static void do_sflg( struct codegen* codegen ) {
    int count = 0;
    struct list_iter i;
-   list_iterate( &codegen->task->library_main->scripts, &i );
-   while ( ! list_end( &i ) ) {
-      struct script* script = list_data( &i );
+   zbcx_list_iterate( &codegen->task->library_main->scripts, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct script* script = zbcx_list_data( &i );
       if ( script->flags ) {
          ++count;
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    if ( count ) {
       struct {
@@ -228,15 +228,15 @@ static void do_sflg( struct codegen* codegen ) {
       } entry;
       c_add_str( codegen, "SFLG" );
       c_add_int( codegen, sizeof( entry ) * count );
-      list_iterate( &codegen->task->library_main->scripts, &i );
-      while ( ! list_end( &i ) ) {
-         struct script* script = list_data( &i );
+      zbcx_list_iterate( &codegen->task->library_main->scripts, &i );
+      while ( ! zbcx_list_end( &i ) ) {
+         struct script* script = zbcx_list_data( &i );
          if ( script->flags ) {
             entry.number = ( short ) script->assigned_number;
             entry.flags = ( short ) script->flags;
             c_add_sized( codegen, &entry, sizeof( entry ) );
          }
-         list_next( &i );
+         zbcx_list_next( &i );
       }
    }
 }
@@ -245,16 +245,16 @@ static void do_snam( struct codegen* codegen ) {
    int count = 0;
    int total_length = 0;
    struct list_iter i;
-   list_iterate( &codegen->task->library_main->scripts, &i );
-   while ( ! list_end( &i ) ) {
-      struct script* script = list_data( &i );
+   zbcx_list_iterate( &codegen->task->library_main->scripts, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct script* script = zbcx_list_data( &i );
       if ( script->named_script ) {
          struct indexed_string* name = t_lookup_string( codegen->task,
             script->number->value );
          total_length += name->length + 1;
          ++count;
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    if ( ! count ) {
       return;
@@ -270,29 +270,29 @@ static void do_snam( struct codegen* codegen ) {
    c_add_int( codegen, count );
    // Offsets
    // -----------------------------------------------------------------------
-   list_iterate( &codegen->task->library_main->scripts, &i );
+   zbcx_list_iterate( &codegen->task->library_main->scripts, &i );
    int offset = sizeof( int ) + sizeof( int ) * count;
-   while ( ! list_end( &i ) ) {
-      struct script* script = list_data( &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct script* script = zbcx_list_data( &i );
       if ( script->named_script ) {
          c_add_int( codegen, offset );
          struct indexed_string* name = t_lookup_string( codegen->task,
             script->number->value );
          offset += name->length + 1;
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    // Text
    // -----------------------------------------------------------------------
-   list_iterate( &codegen->task->library_main->scripts, &i );
-   while ( ! list_end( &i ) ) {
-      struct script* script = list_data( &i );
+   zbcx_list_iterate( &codegen->task->library_main->scripts, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct script* script = zbcx_list_data( &i );
       if ( script->named_script ) {
          struct indexed_string* name = t_lookup_string( codegen->task,
             script->number->value );
          c_add_sized( codegen, name->value, name->length + 1 );
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    while ( padding ) {
       c_add_byte( codegen, 0 );
@@ -301,7 +301,7 @@ static void do_snam( struct codegen* codegen ) {
 }
 
 static void do_func( struct codegen* codegen ) {
-   if ( list_size( &codegen->funcs ) == 0 ) {
+   if ( zbcx_list_size( &codegen->funcs ) == 0 ) {
       return;
    }
    struct {
@@ -313,11 +313,11 @@ static void do_func( struct codegen* codegen ) {
    } entry;
    entry.padding = 0;
    c_add_str( codegen, "FUNC" );
-   c_add_int( codegen, sizeof( entry ) * list_size( &codegen->funcs ) );
+   c_add_int( codegen, sizeof( entry ) * zbcx_list_size( &codegen->funcs ) );
    struct list_iter i;
-   list_iterate( &codegen->funcs, &i );
-   while ( ! list_end( &i ) ) {
-      struct func* func = list_data( &i );
+   zbcx_list_iterate( &codegen->funcs, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct func* func = zbcx_list_data( &i );
       entry.params = ( char ) c_total_param_size( func );
       entry.value = ( char ) ( func->return_spec != SPEC_VOID );
       if ( func->imported ) {
@@ -330,7 +330,7 @@ static void do_func( struct codegen* codegen ) {
          entry.offset = impl->obj_pos;
       }
       c_add_sized( codegen, &entry, sizeof( entry ) );
-      list_next( &i );
+      zbcx_list_next( &i );
    }
 }
 
@@ -349,20 +349,20 @@ int c_total_param_size( struct func* func ) {
 // Always output the FNAM chunk if the FUNC chunk is present, even if the FNAM
 // chunk will end up being empty.
 static void do_fnam( struct codegen* codegen ) {
-   if ( list_size( &codegen->funcs ) == 0 ) {
+   if ( zbcx_list_size( &codegen->funcs ) == 0 ) {
       return;
    }
    int count = 0;
    int size = 0;
    struct list_iter i;
-   list_iterate( &codegen->funcs, &i );
-   while ( ! list_end( &i ) ) {
-      struct func* func = list_data( &i );
+   zbcx_list_iterate( &codegen->funcs, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct func* func = zbcx_list_data( &i );
       if ( ! func->hidden ) {
          size += t_full_name_length( func->name ) + 1;
          ++count;
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    int offset =
       sizeof( int ) +
@@ -372,26 +372,26 @@ static void do_fnam( struct codegen* codegen ) {
    c_add_int( codegen, offset + size + padding );
    c_add_int( codegen, count );
    // Offsets.
-   list_iterate( &codegen->funcs, &i );
-   while ( ! list_end( &i ) ) {
-      struct func* func = list_data( &i );
+   zbcx_list_iterate( &codegen->funcs, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct func* func = zbcx_list_data( &i );
       if ( ! func->hidden ) {
          c_add_int( codegen, offset );
          offset += t_full_name_length( func->name ) + 1;
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    // Names.
    struct str str;
    str_init( &str );
-   list_iterate( &codegen->funcs, &i );
-   while ( ! list_end( &i ) ) {
-      struct func* func = list_data( &i );
+   zbcx_list_iterate( &codegen->funcs, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct func* func = zbcx_list_data( &i );
       if ( ! func->hidden ) {
          t_copy_name( func->name, true, &str );
          c_add_sized( codegen, str.value, str.length + 1 );
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    str_deinit( &str );
    while ( padding ) {
@@ -401,23 +401,23 @@ static void do_fnam( struct codegen* codegen ) {
 }
 
 static void do_strl( struct codegen* codegen ) {
-   if ( ! list_size( &codegen->used_strings ) ) {
+   if ( ! zbcx_list_size( &codegen->used_strings ) ) {
       return;
    }
    int size = 0;
    struct list_iter i;
-   list_iterate( &codegen->used_strings, &i );
-   while ( ! list_end( &i ) ) {
-      struct indexed_string* string = list_data( &i );
+   zbcx_list_iterate( &codegen->used_strings, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct indexed_string* string = zbcx_list_data( &i );
       // Plus one for the NUL character.
       size += string->length + 1;
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    int offset = 
       // String count, padded with a zero on each size.
       sizeof( int ) * 3 +
       // String offsets.
-      sizeof( int ) * list_size( &codegen->used_strings );
+      sizeof( int ) * zbcx_list_size( &codegen->used_strings );
    int padding = alignpad( offset + size, 4 );
    int offset_initial = offset;
    const char* name = "STRL";
@@ -428,21 +428,21 @@ static void do_strl( struct codegen* codegen ) {
    c_add_int( codegen, offset + size + padding );
    // String count.
    c_add_int( codegen, 0 );
-   c_add_int( codegen, list_size( &codegen->used_strings ) );
+   c_add_int( codegen, zbcx_list_size( &codegen->used_strings ) );
    c_add_int( codegen, 0 );
    // Offsets.
-   list_iterate( &codegen->used_strings, &i );
-   while ( ! list_end( &i ) ) {
-      struct indexed_string* string = list_data( &i );
+   zbcx_list_iterate( &codegen->used_strings, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct indexed_string* string = zbcx_list_data( &i );
       c_add_int( codegen, offset );
       offset += string->length + 1;
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    // Strings.
    offset = offset_initial;
-   list_iterate( &codegen->used_strings, &i );
-   while ( ! list_end( &i ) ) {
-      struct indexed_string* string = list_data( &i );
+   zbcx_list_iterate( &codegen->used_strings, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct indexed_string* string = zbcx_list_data( &i );
       if ( codegen->task->library_main->encrypt_str ) {
          int key = offset * STR_ENCRYPTION_CONSTANT;
          // Each character of the string is encoded, including the NUL
@@ -457,7 +457,7 @@ static void do_strl( struct codegen* codegen ) {
       else {
          c_add_sized( codegen, string->value, string->length + 1 );
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    while ( padding ) {
       c_add_byte( codegen, 0 );
@@ -467,22 +467,22 @@ static void do_strl( struct codegen* codegen ) {
 
 static void do_mini( struct codegen* codegen ) {
    struct list_iter i;
-   list_iterate( &codegen->scalars, &i );
+   zbcx_list_iterate( &codegen->scalars, &i );
    struct var* first_var = NULL;
-   while ( ! list_end( &i ) && ! first_var ) {
-      struct var* var = list_data( &i );
+   while ( ! zbcx_list_end( &i ) && ! first_var ) {
+      struct var* var = zbcx_list_data( &i );
       if ( c_is_nonzero_scalar_var( var ) ) {
          first_var = var;
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    struct var* last_var = first_var;
-   while ( ! list_end( &i ) ) {
-      struct var* var = list_data( &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct var* var = zbcx_list_data( &i );
       if ( c_is_nonzero_scalar_var( var ) ) {
          last_var = var;
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    if ( ! first_var ) {
       return;
@@ -493,13 +493,13 @@ static void do_mini( struct codegen* codegen ) {
       sizeof( int ) + // Index of first variable in the sequence.
       sizeof( int ) * count ); // Initializers.
    c_add_int( codegen, first_var->index );
-   list_iterate( &codegen->scalars, &i );
-   while ( ! list_end( &i ) && list_data( &i ) != first_var ) {
-      list_next( &i );
+   zbcx_list_iterate( &codegen->scalars, &i );
+   while ( ! zbcx_list_end( &i ) && zbcx_list_data( &i ) != first_var ) {
+      zbcx_list_next( &i );
    }
    bool processed_last_var = false;
-   while ( ! list_end( &i ) && ! processed_last_var ) {
-      struct var* var = list_data( &i );
+   while ( ! zbcx_list_end( &i ) && ! processed_last_var ) {
+      struct var* var = zbcx_list_data( &i );
       if ( c_is_nonzero_scalar_var( var ) ) {
          write_mini_value( codegen, var->value );
       }
@@ -507,7 +507,7 @@ static void do_mini( struct codegen* codegen ) {
          c_add_int( codegen, 0 );
       }
       processed_last_var = ( var == last_var );
-      list_next( &i );
+      zbcx_list_next( &i );
    }
 }
 
@@ -535,7 +535,7 @@ static void write_mini_value( struct codegen* codegen, struct value* value ) {
 }
 
 static void do_aray( struct codegen* codegen ) {
-   int count = list_size( &codegen->arrays );
+   int count = zbcx_list_size( &codegen->arrays );
    if ( codegen->shary.used ) {
       ++count;
    }
@@ -549,13 +549,13 @@ static void do_aray( struct codegen* codegen ) {
    c_add_str( codegen, "ARAY" );
    c_add_int( codegen, sizeof( entry ) * count );
    struct list_iter i;
-   list_iterate( &codegen->arrays, &i );
-   while ( ! list_end( &i ) ) {
-      struct var* var = list_data( &i );
+   zbcx_list_iterate( &codegen->arrays, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct var* var = zbcx_list_data( &i );
       entry.number = var->index;
       entry.size = var->size;
       c_add_sized( codegen, &entry, sizeof( entry ) );
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    if ( codegen->shary.used ) {
       entry.number = codegen->shary.index;
@@ -566,10 +566,10 @@ static void do_aray( struct codegen* codegen ) {
 
 static void do_aini( struct codegen* codegen ) {
    struct list_iter i;
-   list_iterate( &codegen->arrays, &i );
-   while ( ! list_end( &i ) ) {
-      write_aini( codegen, list_data( &i ) );
-      list_next( &i );
+   zbcx_list_iterate( &codegen->arrays, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      write_aini( codegen, zbcx_list_data( &i ) );
+      zbcx_list_next( &i );
    }
    if ( codegen->shary.used ) {
       write_aini_shary( codegen );
@@ -732,12 +732,12 @@ static void write_aini_shary( struct codegen* codegen ) {
    struct value_writing writing;
    init_value_writing( &writing );
    struct list_iter i;
-   list_iterate( &codegen->shary.vars, &i );
-   while ( ! list_end( &i ) ) {
-      struct var* var = list_data( &i );
+   zbcx_list_iterate( &codegen->shary.vars, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct var* var = zbcx_list_data( &i );
       write_multi_value_list( codegen, &writing, var->value,
          var->index - codegen->shary.data_offset );
-      list_next( &i );
+      zbcx_list_next( &i );
    }
 }
 
@@ -750,14 +750,14 @@ static int count_shary_initz( struct codegen* codegen ) {
    // Data.
    int index = count;
    struct list_iter i;
-   list_iterate( &codegen->shary.vars, &i );
-   while ( ! list_end( &i ) ) {
-      struct var* var = list_data( &i );
+   zbcx_list_iterate( &codegen->shary.vars, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct var* var = zbcx_list_data( &i );
       int count = count_nonzero_value( codegen, var );
       if ( count != 0 ) {
          index = var->index + count;
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    count += index - count;
    return count;
@@ -765,52 +765,52 @@ static int count_shary_initz( struct codegen* codegen ) {
 
 static void write_diminfo( struct codegen* codegen ) {
    struct list_iter i;
-   list_iterate( &codegen->shary.dims, &i );
-   while ( ! list_end( &i ) ) {
-      struct dim* dim = list_data( &i );
+   zbcx_list_iterate( &codegen->shary.dims, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct dim* dim = zbcx_list_data( &i );
       c_add_int( codegen, t_dim_size( dim ) );
-      list_next( &i );
+      zbcx_list_next( &i );
    }
 }
 
 static void do_load( struct codegen* codegen ) {
    int size = 0;
    struct list_iter i;
-   list_iterate( &codegen->task->library_main->dynamic, &i );
-   while ( ! list_end( &i ) ) {
-      struct library* lib = list_data( &i );
+   zbcx_list_iterate( &codegen->task->library_main->dynamic, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct library* lib = zbcx_list_data( &i );
       if ( lib->name.length > 0 ) {
          size += lib->name.length + 1;
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
-   list_iterate( &codegen->task->library_main->links, &i );
-   while ( ! list_end( &i ) ) {
-      struct library_link* link = list_data( &i );
+   zbcx_list_iterate( &codegen->task->library_main->links, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct library_link* link = zbcx_list_data( &i );
       if ( link->needed ) {
          size += strlen( link->name ) + 1;
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    if ( size ) {
       int padding = alignpad( size, 4 );
       c_add_str( codegen, "LOAD" );
       c_add_int( codegen, size + padding );
-      list_iterate( &codegen->task->library_main->dynamic, &i );
-      while ( ! list_end( &i ) ) {
-         struct library* lib = list_data( &i );
+      zbcx_list_iterate( &codegen->task->library_main->dynamic, &i );
+      while ( ! zbcx_list_end( &i ) ) {
+         struct library* lib = zbcx_list_data( &i );
          if ( lib->name.length > 0 ) {
             c_add_sized( codegen, lib->name.value, lib->name.length + 1 );
          }
-         list_next( &i );
+         zbcx_list_next( &i );
       }
-      list_iterate( &codegen->task->library_main->links, &i );
-      while ( ! list_end( &i ) ) {
-         struct library_link* link = list_data( &i );
+      zbcx_list_iterate( &codegen->task->library_main->links, &i );
+      while ( ! zbcx_list_end( &i ) ) {
+         struct library_link* link = zbcx_list_data( &i );
          if ( link->needed ) {
             c_add_sized( codegen, link->name, strlen( link->name ) + 1 );
          }
-         list_next( &i );
+         zbcx_list_next( &i );
       }
       while ( padding ) {
          c_add_byte( codegen, 0 );
@@ -824,12 +824,12 @@ static void do_load( struct codegen* codegen ) {
 static void do_mimp( struct codegen* codegen ) {
    int size = 0;
    struct list_iter i;
-   list_iterate( &codegen->imported_scalars, &i );
-   while ( ! list_end( &i ) ) {
-      struct var* var = list_data( &i );
+   zbcx_list_iterate( &codegen->imported_scalars, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct var* var = zbcx_list_data( &i );
       size += sizeof( int ) + // Index of variable.
          t_full_name_length( var->name ) + 1; // Plus one for NUL character.
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    if ( size == 0 ) {
       return;
@@ -838,13 +838,13 @@ static void do_mimp( struct codegen* codegen ) {
    c_add_int( codegen, size );
    struct str str;
    str_init( &str );
-   list_iterate( &codegen->imported_scalars, &i );
-   while ( ! list_end( &i ) ) {
-      struct var* var = list_data( &i );
+   zbcx_list_iterate( &codegen->imported_scalars, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct var* var = zbcx_list_data( &i );
       c_add_int( codegen, var->index );
       t_copy_name( var->name, true, &str );
       c_add_sized( codegen, str.value, str.length + 1 );
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    str_deinit( &str );
 }
@@ -852,16 +852,16 @@ static void do_mimp( struct codegen* codegen ) {
 // NOTE: acc does not pad this chunk at the end, so this chunk might cause any
 // subsequent chunk to be misaligned.
 static void do_aimp( struct codegen* codegen ) {
-   if ( list_size( &codegen->imported_arrays ) == 0 ) {
+   if ( zbcx_list_size( &codegen->imported_arrays ) == 0 ) {
       return;
    }
    int size =
       // Number of imported arrays.
       sizeof( int );
    struct list_iter i;
-   list_iterate( &codegen->imported_arrays, &i );
-   while ( ! list_end( &i ) ) {
-      struct var* var = list_data( &i );
+   zbcx_list_iterate( &codegen->imported_arrays, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct var* var = zbcx_list_data( &i );
       size +=
          // Array index.
          sizeof( int ) +
@@ -869,21 +869,21 @@ static void do_aimp( struct codegen* codegen ) {
          sizeof( int ) +
          // Array name, plus one for the NUL character.
          t_full_name_length( var->name ) + 1;
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    c_add_str( codegen, "AIMP" );
    c_add_int( codegen, size );
-   c_add_int( codegen, list_size( &codegen->imported_arrays ) );
+   c_add_int( codegen, zbcx_list_size( &codegen->imported_arrays ) );
    struct str str;
    str_init( &str );
-   list_iterate( &codegen->imported_arrays, &i );
-   while ( ! list_end( &i ) ) {
-      struct var* var = list_data( &i );
+   zbcx_list_iterate( &codegen->imported_arrays, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct var* var = zbcx_list_data( &i );
       c_add_int( codegen, var->index );
       c_add_int( codegen, var->size );
       t_copy_name( var->name, true, &str );
       c_add_sized( codegen, str.value, str.length + 1 );
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    str_deinit( &str );
 }
@@ -892,14 +892,14 @@ static void do_mexp( struct codegen* codegen ) {
    int count = 0;
    int size = 0;
    struct list_iter i;
-   list_iterate( &codegen->vars, &i );
-   while ( ! list_end( &i ) ) {
-      struct var* var = list_data( &i );
+   zbcx_list_iterate( &codegen->vars, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct var* var = zbcx_list_data( &i );
       if ( ! var->hidden ) {
          size += t_full_name_length( var->name ) + 1;
          ++count;
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    if ( ! count ) {
       return;
@@ -912,26 +912,26 @@ static void do_mexp( struct codegen* codegen ) {
    c_add_int( codegen, offset + size + padding );
    c_add_int( codegen, count );
    // Write offsets.
-   list_iterate( &codegen->vars, &i );
-   while ( ! list_end( &i ) ) {
-      struct var* var = list_data( &i );
+   zbcx_list_iterate( &codegen->vars, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct var* var = zbcx_list_data( &i );
       if ( ! var->hidden ) {
          c_add_int( codegen, offset );
          offset += t_full_name_length( var->name ) + 1;
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    // Write names.
    struct str str;
    str_init( &str );
-   list_iterate( &codegen->vars, &i );
-   while ( ! list_end( &i ) ) {
-      struct var* var = list_data( &i );
+   zbcx_list_iterate( &codegen->vars, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct var* var = zbcx_list_data( &i );
       if ( ! var->hidden ) {
          t_copy_name( var->name, true, &str );
          c_add_sized( codegen, str.value, str.length + 1 );
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    str_deinit( &str );
    while ( padding ) {
@@ -943,25 +943,25 @@ static void do_mexp( struct codegen* codegen ) {
 static void do_mstr( struct codegen* codegen ) {
    int count = 0;
    struct list_iter i;
-   list_iterate( &codegen->scalars, &i );
-   while ( ! list_end( &i ) ) {
-      if ( mstr_var( list_data( &i ) ) ) {
+   zbcx_list_iterate( &codegen->scalars, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      if ( mstr_var( zbcx_list_data( &i ) ) ) {
          ++count;
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    if ( count == 0 ) {
       return;
    }
    c_add_str( codegen, "MSTR" );
    c_add_int( codegen, sizeof( int ) * count );
-   list_iterate( &codegen->scalars, &i );
-   while ( ! list_end( &i ) ) {
-      struct var* var = list_data( &i );
+   zbcx_list_iterate( &codegen->scalars, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct var* var = zbcx_list_data( &i );
       if ( mstr_var( var ) ) {
          c_add_int( codegen, var->index );
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
 }
 
@@ -973,26 +973,26 @@ inline static bool mstr_var( struct var* var ) {
 static void do_astr( struct codegen* codegen ) {
    int count = 0;
    struct list_iter i;
-   list_iterate( &codegen->arrays, &i );
-   while ( ! list_end( &i ) ) {
-      struct var* var = list_data( &i );
+   zbcx_list_iterate( &codegen->arrays, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct var* var = zbcx_list_data( &i );
       if ( astr_var( var ) ) {
          ++count;
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    if ( count == 0 ) {
       return;
    }
    c_add_str( codegen, "ASTR" );
    c_add_int( codegen, sizeof( int ) * count );
-   list_iterate( &codegen->arrays, &i );
-   while ( ! list_end( &i ) ) {
-      struct var* var = list_data( &i );
+   zbcx_list_iterate( &codegen->arrays, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct var* var = zbcx_list_data( &i );
       if ( astr_var( var ) ) {
          c_add_int( codegen, var->index );
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
 }
 
@@ -1003,15 +1003,15 @@ inline static bool astr_var( struct var* var ) {
 
 static void do_atag( struct codegen* codegen ) {
    struct list_iter i;
-   list_iterate( &codegen->arrays, &i );
-   while ( ! list_end( &i ) ) {
-      struct var* var = list_data( &i );
+   zbcx_list_iterate( &codegen->arrays, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct var* var = zbcx_list_data( &i );
       if ( var->desc == DESC_STRUCTVAR ) {
          struct atag_writing writing;
          init_atag_writing_var( &writing, var );
          write_atag_chunk( codegen, &writing );
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    if ( codegen->shary.used ) {
       struct atag_writing writing;
@@ -1043,7 +1043,7 @@ static void init_atag_writing( struct atag_writing* writing, int index ) {
 static void iterate_atag( struct codegen* codegen,
    struct atag_writing* writing ) {
    if ( writing->shary ) {
-      list_iterate( &codegen->shary.vars, &writing->iter );
+      zbcx_list_iterate( &codegen->shary.vars, &writing->iter );
       next_atag( writing );
    }
    else {
@@ -1054,9 +1054,9 @@ static void iterate_atag( struct codegen* codegen,
 static void next_atag( struct atag_writing* writing ) {
    writing->value = NULL;
    if ( writing->shary ) {
-      while ( ! list_end( &writing->iter ) ) {
-         struct var* var = list_data( &writing->iter );
-         list_next( &writing->iter );
+      while ( ! zbcx_list_end( &writing->iter ) ) {
+         struct var* var = zbcx_list_data( &writing->iter );
+         zbcx_list_next( &writing->iter );
          if ( var->value ) {
             writing->value = var->value;
             writing->base = var->index;
@@ -1151,20 +1151,20 @@ static void write_atag_chunk( struct codegen* codegen,
 static void do_sary( struct codegen* codegen ) {
    // Scripts.
    struct list_iter i;
-   list_iterate( &codegen->task->library_main->scripts, &i );
-   while ( ! list_end( &i ) ) {
-      struct script* script = list_data( &i );
+   zbcx_list_iterate( &codegen->task->library_main->scripts, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct script* script = zbcx_list_data( &i );
       write_sary_chunk( codegen, "SARY", script->assigned_number,
          &script->vars );
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    // Functions.
-   list_iterate( &codegen->task->library_main->funcs, &i );
-   while ( ! list_end( &i ) ) {
-      struct func* func = list_data( &i );
+   zbcx_list_iterate( &codegen->task->library_main->funcs, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct func* func = zbcx_list_data( &i );
       struct func_user* impl = func->impl;
       write_sary_chunk( codegen, "FARY", impl->index, &impl->vars );
-      list_next( &i );
+      zbcx_list_next( &i );
    }
 }
 
@@ -1172,10 +1172,10 @@ static void write_sary_chunk( struct codegen* codegen, const char* chunk_name,
    int index, struct list* vars ) {
    int count = 0;
    struct list_iter i;
-   list_iterate( vars, &i );
-   while ( ! list_end( &i ) ) {
-      count += ( int ) script_array( list_data( &i ) );
-      list_next( &i );
+   zbcx_list_iterate( vars, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      count += ( int ) script_array( zbcx_list_data( &i ) );
+      zbcx_list_next( &i );
    }
    if ( ! count ) {
       return;
@@ -1187,13 +1187,13 @@ static void write_sary_chunk( struct codegen* codegen, const char* chunk_name,
       // List of array sizes.
       sizeof( int ) * count );
    c_add_short( codegen, ( short ) index );
-   list_iterate( vars, &i );
-   while ( ! list_end( &i ) ) {
-      struct var* var = list_data( &i );
+   zbcx_list_iterate( vars, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct var* var = zbcx_list_data( &i );
       if ( script_array( var ) ) {
          c_add_int( codegen, var->size );
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
 }
 

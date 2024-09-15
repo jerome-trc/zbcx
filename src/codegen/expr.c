@@ -1594,9 +1594,9 @@ static void visit_aspec_call( struct codegen* codegen, struct result* result,
    int count = 0;
    int arg_number = 0;
    struct list_iter i;
-   list_iterate( &call->args, &i );
-   while ( ! list_end( &i ) ) {
-      struct expr* arg = list_data( &i );
+   zbcx_list_iterate( &call->args, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct expr* arg = zbcx_list_data( &i );
       bool skippable_arg = (
          arg->folded &&
          arg->value == 0 &&
@@ -1605,15 +1605,15 @@ static void visit_aspec_call( struct codegen* codegen, struct result* result,
          count = arg_number + 1;
       }
       ++arg_number;
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    // Push arguments.
    arg_number = 0;
-   list_iterate( &call->args, &i );
-   while ( ! list_end( &i ) && arg_number < count ) {
-      c_push_expr( codegen, list_data( &i ) );
+   zbcx_list_iterate( &call->args, &i );
+   while ( ! zbcx_list_end( &i ) && arg_number < count ) {
+      c_push_expr( codegen, zbcx_list_data( &i ) );
       ++arg_number;
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    // Call action special.
    struct func_aspec* aspec = call->func->impl;
@@ -1652,13 +1652,13 @@ static void visit_aspec_call( struct codegen* codegen, struct result* result,
 static void visit_ext_call( struct codegen* codegen, struct result* result,
    struct call* call ) {
    struct list_iter i;
-   list_iterate( &call->args, &i );
-   while ( ! list_end( &i ) ) {
-      c_push_expr( codegen, list_data( &i ) );
-      list_next( &i );
+   zbcx_list_iterate( &call->args, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      c_push_expr( codegen, zbcx_list_data( &i ) );
+      zbcx_list_next( &i );
    }
    struct func_ext* impl = call->func->impl;
-   c_pcd( codegen, PCD_CALLFUNC, list_size( &call->args ), impl->id );
+   c_pcd( codegen, PCD_CALLFUNC, zbcx_list_size( &call->args ), impl->id );
    result->status = R_VALUE;
 }
 
@@ -1667,16 +1667,16 @@ static void visit_ded_call( struct codegen* codegen, struct result* result,
    // Push arguments.
    struct param* param = call->func->params;
    struct list_iter i;
-   list_iterate( &call->args, &i );
-   while ( ! list_end( &i ) ) {
-      c_push_expr( codegen, list_data( &i ) );
+   zbcx_list_iterate( &call->args, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      c_push_expr( codegen, zbcx_list_data( &i ) );
       if ( param ) {
          param = param->next;
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    // Push default arguments.
-   int count = list_size( &call->args );
+   int count = zbcx_list_size( &call->args );
    while ( count < call->func->max_param ) {
       if ( param ) {
          c_push_expr( codegen, param->default_value );
@@ -1738,11 +1738,11 @@ static void write_call_args( struct codegen* codegen, struct call* call ) {
    struct param* param = call->func->params;
    // Push arguments.
    struct list_iter i;
-   list_iterate( &call->args, &i );
-   while ( ! list_end( &i ) ) {
-      push_arg( codegen, param, list_data( &i ) );
+   zbcx_list_iterate( &call->args, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      push_arg( codegen, param, zbcx_list_data( &i ) );
       param = param->next;
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    // Push default arguments.
    while ( param ) {
@@ -1807,16 +1807,16 @@ static void visit_sample_call( struct codegen* codegen, struct result* result,
       write_null_check( codegen );
    }
    // Push arguments.
-   if ( list_size( &call->args ) > 0 ) {
+   if ( zbcx_list_size( &call->args ) > 0 ) {
       int caller = c_alloc_script_var( codegen );
       c_update_indexed( codegen, STORAGE_LOCAL, caller, AOP_NONE );
       struct list_iter i;
-      list_iterate( &call->args, &i );
+      zbcx_list_iterate( &call->args, &i );
       struct param* param = call->ref_func->params;
-      while ( ! list_end( &i ) ) {
-         push_arg( codegen, param, list_data( &i ) );
+      while ( ! zbcx_list_end( &i ) ) {
+         push_arg( codegen, param, zbcx_list_data( &i ) );
          param = param->next;
-         list_next( &i );
+         zbcx_list_next( &i );
       }
       push_indexed( codegen, STORAGE_LOCAL, caller );
       c_dealloc_last_script_var( codegen );
@@ -1864,14 +1864,14 @@ static void call_format( struct codegen* codegen, struct result* result,
       c_pcd( codegen, PCD_MOREHUDMESSAGE );
       int count = 0;
       struct list_iter i;
-      list_iterate( &call->args, &i );
-      while ( ! list_end( &i ) ) {
+      zbcx_list_iterate( &call->args, &i );
+      while ( ! zbcx_list_end( &i ) ) {
          if ( count == call->func->min_param ) {
             c_pcd( codegen, PCD_OPTHUDMESSAGE );
          }
-         c_push_expr( codegen, list_data( &i ) );
+         c_push_expr( codegen, zbcx_list_data( &i ) );
          ++count;
-         list_next( &i );
+         zbcx_list_next( &i );
       }
    }
    struct func_format* format = call->func->impl;
@@ -1974,7 +1974,7 @@ static void visit_msgbuild_format_item( struct codegen* codegen,
    struct format_item* item ) {
    struct format_item_buildmsg* extra = item->extra;
    // Inline the message-building block if it only has a single user.
-   if ( list_size( &extra->usage->buildmsg->usages ) == 1 ) {
+   if ( zbcx_list_size( &extra->usage->buildmsg->usages ) == 1 ) {
       c_write_block( codegen, extra->usage->buildmsg->block );
    }
    else {
@@ -1998,7 +1998,7 @@ static void visit_internal_call( struct codegen* codegen,
    }
    else if ( impl->id == INTERN_FUNC_STR_AT ) {
       visit_operand( codegen, result, call->operand );
-      c_push_expr( codegen, list_head( &call->args ) );
+      c_push_expr( codegen, zbcx_list_head( &call->args ) );
       c_pcd( codegen, PCD_CALLFUNC, 2, 15 );
    }
    else if ( impl->id == INTERN_FUNC_ARRAY_LENGTH ) {
@@ -2009,27 +2009,27 @@ static void visit_internal_call( struct codegen* codegen,
 static void write_executewait( struct codegen* codegen, struct call* call,
    bool named_impl ) {
    struct list_iter i;
-   list_iterate( &call->args, &i );
-   c_push_expr( codegen, list_data( &i ) );
+   zbcx_list_iterate( &call->args, &i );
+   c_push_expr( codegen, zbcx_list_data( &i ) );
    c_pcd( codegen, PCD_DUP );
-   list_next( &i );
-   if ( ! list_end( &i ) ) {
+   zbcx_list_next( &i );
+   if ( ! zbcx_list_end( &i ) ) {
       // Second argument to Acs_Execute is 0--the current map. Ignore what the
       // user specified.
       c_pcd( codegen, PCD_PUSHNUMBER, 0 );
-      list_next( &i );
-      while ( ! list_end( &i ) ) {
-         c_push_expr( codegen, list_data( &i ) );
-         list_next( &i );
+      zbcx_list_next( &i );
+      while ( ! zbcx_list_end( &i ) ) {
+         c_push_expr( codegen, zbcx_list_data( &i ) );
+         zbcx_list_next( &i );
       }
    }
    if ( named_impl ) {
-      c_pcd( codegen, PCD_CALLFUNC, list_size( &call->args ), 39 );
+      c_pcd( codegen, PCD_CALLFUNC, zbcx_list_size( &call->args ), 39 );
       c_pcd( codegen, PCD_DROP );
       c_pcd( codegen, PCD_SCRIPTWAITNAMED );
    }
    else {
-      c_pcd( codegen, g_aspec_code[ list_size( &call->args ) - 1 ], 80 );
+      c_pcd( codegen, g_aspec_code[ zbcx_list_size( &call->args ) - 1 ], 80 );
       c_pcd( codegen, PCD_SCRIPTWAIT );
    }
 }

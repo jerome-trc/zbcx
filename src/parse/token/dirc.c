@@ -985,9 +985,9 @@ void p_define_predef_macros( struct parse* parse ) {
 
 void p_define_cmdline_macros( struct parse* parse ) {
    struct list_iter i;
-   list_iterate( &parse->task->options->defines, &i );
-   while ( ! list_end( &i ) ) {
-      const char* name = list_data( &i );
+   zbcx_list_iterate( &parse->task->options->defines, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      const char* name = zbcx_list_data( &i );
       struct macro* macro = p_find_macro( parse, name );
       if ( ! macro ) {
          struct token* token = p_alloc_token( parse );
@@ -1001,7 +1001,7 @@ void p_define_cmdline_macros( struct parse* parse ) {
          append_token( macro, token );
          append_macro( parse, macro );
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
 }
 

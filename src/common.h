@@ -83,27 +83,27 @@ struct list_iter {
    struct list_link* link;
 };
 
-void list_init( struct list* list );
-int list_size( struct list* list );
-void* list_head( struct list* list );
-void* list_tail( struct list* list );
-void list_append( struct list*, void* data );
-void list_prepend( struct list*, void* data );
-void list_iterate( struct list* list, struct list_iter* iter );
-bool list_end( struct list_iter* iter );
-void list_next( struct list_iter* iter );
-void* list_data( struct list_iter* iter );
-void list_insert_after( struct list* list,
+void zbcx_list_init( struct list* list );
+int zbcx_list_size( struct list* list );
+void* zbcx_list_head( struct list* list );
+void* zbcx_list_tail( struct list* list );
+void zbcx_list_append( struct list*, void* data );
+void zbcx_list_prepend( struct list*, void* data );
+void zbcx_list_iterate( struct list* list, struct list_iter* iter );
+bool zbcx_list_end( struct list_iter* iter );
+void zbcx_list_next( struct list_iter* iter );
+void* zbcx_list_data( struct list_iter* iter );
+void zbcx_list_insert_after( struct list* list,
    struct list_iter* iter, void* data );
-void list_insert_before( struct list* list,
+void zbcx_list_insert_before( struct list* list,
    struct list_iter* iter, void* data );
 // Updates the data at the specified node and returns the old data.
-void* list_replace( struct list* list,
+void* zbcx_list_replace( struct list* list,
    struct list_iter* iter, void* data );
-void list_merge( struct list* receiver, struct list* giver );
+void zbcx_list_merge( struct list* receiver, struct list* giver );
 // Removes the first node of the list and returns the data of the removed node.
-void* list_shift( struct list* list );
-void list_deinit( struct list* list );
+void* zbcx_list_shift( struct list* list );
+void zbcx_list_deinit( struct list* list );
 
 // --------------------------------------------------------------------------
 

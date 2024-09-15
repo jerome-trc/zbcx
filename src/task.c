@@ -58,16 +58,16 @@ void t_init( struct task* task, struct options* options, jmp_buf* bail,
    init_str_table( &task->script_name_table );
    task->empty_string = t_intern_string( task, "", 0 );
    task->library_main = NULL;
-   list_init( &task->libraries );
-   list_init( &task->namespaces );
+   zbcx_list_init( &task->libraries );
+   zbcx_list_init( &task->namespaces );
    task->last_id = 0;
    task->compile_time = time( NULL );
    gbuf_init( &task->growing_buffer );
-   list_init( &task->runtime_asserts );
+   zbcx_list_init( &task->runtime_asserts );
    task->root_name = t_create_name();
    task->upmost_ns = t_alloc_ns( task->root_name );
    task->upmost_ns->name->object = &task->upmost_ns->object;
-   list_append( &task->namespaces, task->upmost_ns );
+   zbcx_list_append( &task->namespaces, task->upmost_ns );
 
    task->array_name = t_create_name();
    struct func_intern* impl = mem_alloc( sizeof( *impl ) );
@@ -122,7 +122,7 @@ void t_init( struct task* task, struct options* options, jmp_buf* bail,
    // TODO: Make this better.
    task->blank_name = task->upmost_ns->body;
 
-   list_init( &task->include_history );
+   zbcx_list_init( &task->include_history );
    task->last_diag_file = NULL;
    add_internal_file( task, "<none>" );
    add_internal_file( task, "<compiler>" );
@@ -134,7 +134,7 @@ void t_init( struct task* task, struct options* options, jmp_buf* bail,
    str_append( &task->lib_dir, OS_PATHSEP );
    str_append( &task->lib_dir, "lib" );
 
-   list_init( &task->structures );
+   zbcx_list_init( &task->structures );
 }
 
 struct ns* t_alloc_ns( struct name* name ) {
@@ -146,7 +146,7 @@ struct ns* t_alloc_ns( struct name* name ) {
    ns->body_structs = t_extend_name( name, ".!s." );
    ns->body_enums = t_extend_name( name, ".!e." );
    ns->links = NULL;
-   list_init( &ns->fragments );
+   zbcx_list_init( &ns->fragments );
    ns->hidden = false;
    return ns;
 }
@@ -158,12 +158,12 @@ struct ns_fragment* t_alloc_ns_fragment( void ) {
    fragment->path = NULL;
    fragment->unresolved = NULL;
    fragment->unresolved_tail = NULL;
-   list_init( &fragment->objects );
-   list_init( &fragment->funcs );
-   list_init( &fragment->scripts );
-   list_init( &fragment->runnables );
-   list_init( &fragment->fragments );
-   list_init( &fragment->usings );
+   zbcx_list_init( &fragment->objects );
+   zbcx_list_init( &fragment->funcs );
+   zbcx_list_init( &fragment->scripts );
+   zbcx_list_init( &fragment->runnables );
+   zbcx_list_init( &fragment->fragments );
+   zbcx_list_init( &fragment->usings );
    fragment->strict = false;
    fragment->hidden = false;
    return fragment;
@@ -330,10 +330,10 @@ struct include_history_entry* t_alloc_include_history_entry(
    entry->parent = NULL;
    entry->altern_name = NULL;
    entry->file_entry_id = INTERNALFILE_NONE;
-   entry->id = list_size( &task->include_history );
+   entry->id = zbcx_list_size( &task->include_history );
    entry->line = 0;
    entry->imported = false;
-   list_append( &task->include_history, entry );
+   zbcx_list_append( &task->include_history, entry );
    return entry;
 }
 
@@ -471,15 +471,15 @@ static void decode_pos( struct task* task, struct pos* pos,
 struct include_history_entry* t_decode_include_history_entry(
    struct task* task, int id ) {
    struct list_iter i;
-   list_iterate( &task->include_history, &i );
-   while ( ! list_end( &i ) ) {
-      struct include_history_entry* entry = list_data( &i );
+   zbcx_list_iterate( &task->include_history, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct include_history_entry* entry = zbcx_list_data( &i );
       while ( entry->id == id ) {
          return entry;
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
-   return list_head( &task->include_history );
+   return zbcx_list_head( &task->include_history );
 }
 
 static const char* decode_filename( struct task* task,
@@ -588,9 +588,9 @@ static bool identify_file_relative( struct task* task,
    }
    // Try user-specified directories.
    struct list_iter i;
-   list_iterate( &task->options->includes, &i );
-   while ( ! list_end( &i ) ) {
-      char* include = list_data( &i ); 
+   zbcx_list_iterate( &task->options->includes, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      char* include = zbcx_list_data( &i ); 
       str_clear( query->path );
       str_append( query->path, include );
       str_append( query->path, OS_PATHSEP );
@@ -598,7 +598,7 @@ static bool identify_file_relative( struct task* task,
       if ( c_read_fileid( &query->fileid, query->path->value ) ) {
          return true;
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    // Try default include directory.
    str_clear( query->path );
@@ -655,28 +655,28 @@ struct library* t_add_library( struct task* task ) {
    struct library* lib = mem_alloc( sizeof( *lib ) );
    str_init( &lib->name );
    str_copy( &lib->name, "", 0 );
-   list_init( &lib->vars );
-   list_init( &lib->funcs );
-   list_init( &lib->scripts );
-   list_init( &lib->objects );
-   list_init( &lib->private_objects );
-   list_init( &lib->files );
-   list_init( &lib->import_dircs );
-   list_init( &lib->dynamic );
-   list_init( &lib->dynamic_acs );
-   list_init( &lib->dynamic_bcs );
-   list_init( &lib->links );
-   list_init( &lib->external_vars );
-   list_init( &lib->external_funcs );
+   zbcx_list_init( &lib->vars );
+   zbcx_list_init( &lib->funcs );
+   zbcx_list_init( &lib->scripts );
+   zbcx_list_init( &lib->objects );
+   zbcx_list_init( &lib->private_objects );
+   zbcx_list_init( &lib->files );
+   zbcx_list_init( &lib->import_dircs );
+   zbcx_list_init( &lib->dynamic );
+   zbcx_list_init( &lib->dynamic_acs );
+   zbcx_list_init( &lib->dynamic_bcs );
+   zbcx_list_init( &lib->links );
+   zbcx_list_init( &lib->external_vars );
+   zbcx_list_init( &lib->external_funcs );
    lib->upmost_ns_fragment = t_alloc_ns_fragment();
    lib->upmost_ns_fragment->ns = task->upmost_ns;
-   list_append( &lib->upmost_ns_fragment->ns->fragments,
+   zbcx_list_append( &lib->upmost_ns_fragment->ns->fragments,
       lib->upmost_ns_fragment );
    // root_name->object = &lib->upmost_ns->object;
    lib->file_pos.line = 0;
    lib->file_pos.column = 0;
    lib->file_pos.id = 0;
-   lib->id = list_size( &task->libraries );
+   lib->id = zbcx_list_size( &task->libraries );
    lib->format = FORMAT_LITTLE_E;
    lib->importable = false;
    lib->imported = false;
@@ -975,7 +975,7 @@ struct func* t_alloc_func( void ) {
 
 struct func_user* t_alloc_func_user( void ) {
    struct func_user* impl = mem_alloc( sizeof( *impl ) );
-   list_init( &impl->labels );
+   zbcx_list_init( &impl->labels );
    impl->body = NULL;
    impl->next_nested = NULL;
    impl->nested_funcs = NULL;
@@ -983,8 +983,8 @@ struct func_user* t_alloc_func_user( void ) {
    impl->returns = NULL;
    impl->prologue_point = NULL;
    impl->return_table = NULL;
-   list_init( &impl->vars );
-   list_init( &impl->funcscope_vars );
+   zbcx_list_init( &impl->vars );
+   zbcx_list_init( &impl->funcscope_vars );
    impl->index = 0;
    impl->size = 0;
    impl->usage = 0;
@@ -1032,7 +1032,7 @@ struct call* t_alloc_call( void ) {
    call->ref_func = NULL;
    call->nested_call = NULL;
    call->format_item = NULL;
-   list_init( &call->args );
+   zbcx_list_init( &call->args );
    call->constant = false;
    return call;
 }
@@ -1149,9 +1149,9 @@ struct script* t_alloc_script( void ) {
    script->body = NULL;
    script->nested_funcs = NULL;
    script->nested_calls = NULL;
-   list_init( &script->labels );
-   list_init( &script->vars );
-   list_init( &script->funcscope_vars );
+   zbcx_list_init( &script->labels );
+   zbcx_list_init( &script->vars );
+   zbcx_list_init( &script->funcscope_vars );
    script->assigned_number = 0;
    script->num_param = 0;
    script->offset = 0;

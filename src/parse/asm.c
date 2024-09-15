@@ -37,7 +37,7 @@ static struct inline_asm* alloc_inline_asm( void ) {
    inline_asm->node.type = NODE_INLINE_ASM;
    inline_asm->name = NULL;
    inline_asm->next = NULL;
-   list_init( &inline_asm->args );
+   zbcx_list_init( &inline_asm->args );
    inline_asm->opcode = 0;
    inline_asm->obj_pos = 0;
    return inline_asm;
@@ -63,7 +63,7 @@ static void read_opcode( struct parse* parse, struct inline_asm* inline_asm ) {
 
 static void read_arg( struct parse* parse, struct inline_asm* inline_asm ) {
    struct inline_asm_arg* arg = alloc_inline_asm_arg( &parse->tk_pos );
-   list_append( &inline_asm->args, arg );
+   zbcx_list_append( &inline_asm->args, arg );
    if (
       parse->tk == TK_LIT_DECIMAL ||
       parse->tk == TK_LIT_OCTAL ||

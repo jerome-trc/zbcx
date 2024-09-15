@@ -64,10 +64,10 @@ void c_write_block( struct codegen* codegen, struct block* stmt ) {
    init_local_record( codegen, &record );
    push_local_record( codegen, &record );
    struct list_iter i;
-   list_iterate( &stmt->stmts, &i );
-   while ( ! list_end( &i ) ) {
-      write_block_item( codegen, list_data( &i ) );
-      list_next( &i );
+   zbcx_list_iterate( &stmt->stmts, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      write_block_item( codegen, zbcx_list_data( &i ) );
+      zbcx_list_next( &i );
    }
    pop_local_record( codegen );
 }
@@ -569,9 +569,9 @@ static void visit_for( struct codegen* codegen, struct for_stmt* stmt ) {
    init_local_record( codegen, &record );
    push_local_record( codegen, &record );
    struct list_iter i;
-   list_iterate( &stmt->init, &i );
-   while ( ! list_end( &i ) ) {
-      struct node* node = list_data( &i );
+   zbcx_list_iterate( &stmt->init, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct node* node = zbcx_list_data( &i );
       switch ( node->type ) {
       case NODE_EXPR:
          c_visit_expr( codegen,
@@ -584,7 +584,7 @@ static void visit_for( struct codegen* codegen, struct for_stmt* stmt ) {
       default:
          break;
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    // Only test a condition that isn't both constant and true.
    bool test_cond = false;
@@ -609,16 +609,16 @@ static void visit_for( struct codegen* codegen, struct for_stmt* stmt ) {
    c_write_stmt( codegen, stmt->body );
    // Post expressions.
    struct c_point* post_point = NULL;
-   if ( list_size( &stmt->post ) ) {
+   if ( zbcx_list_size( &stmt->post ) ) {
       post_point = c_create_point( codegen );
       c_append_node( codegen, &post_point->node );
-      list_iterate( &stmt->post, &i );
-      while ( ! list_end( &i ) ) {
-         struct node* node = list_data( &i );
+      zbcx_list_iterate( &stmt->post, &i );
+      while ( ! zbcx_list_end( &i ) ) {
+         struct node* node = zbcx_list_data( &i );
          if ( node->type == NODE_EXPR ) {
             c_visit_expr( codegen, ( struct expr* ) node );
          }
-         list_next( &i );
+         zbcx_list_next( &i );
       }
    }
    // Condition.
@@ -1176,7 +1176,7 @@ static void write_msgbuild_block( struct codegen* codegen,
    // When a message-building block is used more than once in the same
    // expression, instead of duplicating the block code, use a goto instruction
    // to enter the block. Single-usage blocks are inlined at the call site.
-   if ( list_size( &buildmsg->usages ) > 1 ) {
+   if ( zbcx_list_size( &buildmsg->usages ) > 1 ) {
       write_multi_usage_msgbuild_block( codegen, buildmsg );
    }
 }
@@ -1191,9 +1191,9 @@ static void write_multi_usage_msgbuild_block( struct codegen* codegen,
    // Create jumps into the message-building block.
    unsigned int entry_number = 0;
    struct list_iter i;
-   list_iterate( &buildmsg->usages, &i );
-   while ( ! list_end( &i ) ) {
-      struct buildmsg_usage* usage = list_data( &i );
+   zbcx_list_iterate( &buildmsg->usages, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct buildmsg_usage* usage = zbcx_list_data( &i );
       c_seek_node( codegen, &usage->point->node );
       c_pcd( codegen, PCD_PUSHNUMBER, entry_number );
       struct c_jump* jump = c_create_jump( codegen, PCD_GOTO );
@@ -1203,21 +1203,21 @@ static void write_multi_usage_msgbuild_block( struct codegen* codegen,
       c_append_node( codegen, &return_point->node );
       usage->point = return_point;
       ++entry_number;
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    c_seek_node( codegen, codegen->node_tail );
    // Create return table.
    struct c_sortedcasejump* return_table = c_create_sortedcasejump( codegen );
    c_append_node( codegen, &return_table->node );
    entry_number = 0;
-   list_iterate( &buildmsg->usages, &i );
-   while ( ! list_end( &i ) ) {
-      struct buildmsg_usage* usage = list_data( &i );
+   zbcx_list_iterate( &buildmsg->usages, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct buildmsg_usage* usage = zbcx_list_data( &i );
       struct c_casejump* entry = c_create_casejump( codegen, entry_number,
          usage->point );
       c_append_casejump( return_table, entry );
       ++entry_number;
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    // Exit.
    struct c_point* exit_point = c_create_point( codegen );
@@ -1228,9 +1228,9 @@ static void write_multi_usage_msgbuild_block( struct codegen* codegen,
 static void visit_expr_stmt( struct codegen* codegen,
    struct expr_stmt* stmt ) {
    struct list_iter i;
-   list_iterate( &stmt->expr_list, &i );
-   while ( ! list_end( &i ) ) {
-      c_visit_expr( codegen, list_data( &i ) );
-      list_next( &i );
+   zbcx_list_iterate( &stmt->expr_list, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      c_visit_expr( codegen, zbcx_list_data( &i ) );
+      zbcx_list_next( &i );
    }
 }

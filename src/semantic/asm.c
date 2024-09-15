@@ -34,10 +34,10 @@ void p_test_inline_asm( struct semantic* semantic,
    struct test test = { .stmt_test = stmt_test, .inline_asm = inline_asm };
    test_name( semantic, &test );
    struct list_iter i;
-   list_iterate( &inline_asm->args, &i );
-   while ( ! list_end( &i ) ) {
-      test_arg( semantic, &test, list_data( &i ) );
-      list_next( &i );
+   zbcx_list_iterate( &inline_asm->args, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      test_arg( semantic, &test, zbcx_list_data( &i ) );
+      zbcx_list_next( &i );
    }
    if ( *test.format && ! test.repeat ) {
       s_diag( semantic, DIAG_POS_ERR, &inline_asm->pos,
@@ -535,15 +535,15 @@ static void test_arg( struct semantic* semantic, struct test* test,
 static void test_label_arg( struct semantic* semantic, struct test* test,
    struct inline_asm_arg* arg ) {
    struct list_iter i;
-   list_iterate( semantic->topfunc_test->labels, &i );
-   while ( ! list_end( &i ) ) {
-      struct label* label = list_data( &i );
+   zbcx_list_iterate( semantic->topfunc_test->labels, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct label* label = zbcx_list_data( &i );
       if ( strcmp( label->name, arg->value.id ) == 0 ) {
          arg->value.label = label;
          arg->type = INLINE_ASM_ARG_LABEL;
          return;
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    s_diag( semantic, DIAG_POS_ERR, &arg->pos,
       "label `%s` not found", arg->value.id );

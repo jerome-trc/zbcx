@@ -1856,7 +1856,7 @@ void s_test_local_var( struct semantic* semantic, struct var* var ) {
       s_calc_var_value_index( var );
    }
    if ( ! var->force_local_scope ) {
-      list_append( semantic->func_test->funcscope_vars, var );
+      zbcx_list_append( semantic->func_test->funcscope_vars, var );
    }
 }
 

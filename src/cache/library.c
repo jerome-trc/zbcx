@@ -146,14 +146,14 @@ static void save_lib( struct saver* saver ) {
 
 static void save_file_map( struct saver* saver ) {
    WF( saver, F_FILEMAP );
-   int size = list_size( &saver->lib->files );
+   int size = zbcx_list_size( &saver->lib->files );
    WV( saver, F_SIZE, &size );
    struct list_iter i;
-   list_iterate( &saver->lib->files, &i );
-   while ( ! list_end( &i ) ) {
-      struct file_entry* file = list_data( &i );
+   zbcx_list_iterate( &saver->lib->files, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct file_entry* file = zbcx_list_data( &i );
       WS( saver, F_FILEPATH, file->full_path.value );
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    WF( saver, F_END );
 }
@@ -183,17 +183,17 @@ static void save_namespace_member_list( struct saver* saver,
    struct ns_fragment* fragment ) {
    // Objects.
    struct list_iter i;
-   list_iterate( &fragment->objects, &i );
-   while ( ! list_end( &i ) ) {
-      save_namespace_member( saver, list_data( &i ) );
-      list_next( &i );
+   zbcx_list_iterate( &fragment->objects, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      save_namespace_member( saver, zbcx_list_data( &i ) );
+      zbcx_list_next( &i );
    }
    // Scripts.
    // Scripts are saved for the purpose of generating warnings.
-   list_iterate( &fragment->scripts, &i );
-   while ( ! list_end( &i ) ) {
-      save_script( saver, list_data( &i ) );
-      list_next( &i );
+   zbcx_list_iterate( &fragment->scripts, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      save_script( saver, zbcx_list_data( &i ) );
+      zbcx_list_next( &i );
    }
 }
 
@@ -577,15 +577,15 @@ static void save_pos( struct saver* saver, struct pos* pos ) {
 
 static int map_file( struct saver* saver, int id ) {
    struct list_iter i;
-   list_iterate( &saver->lib->files, &i );
+   zbcx_list_iterate( &saver->lib->files, &i );
    int map_id = 0;
-   while ( ! list_end( &i ) ) {
-      struct file_entry* file = list_data( &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct file_entry* file = zbcx_list_data( &i );
       if ( file->id == id ) {
          return map_id;
       }
       ++map_id;
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    return 0;
 }
@@ -695,7 +695,7 @@ static void restore_file_map( struct restorer* restorer ) {
       t_init_file_query( &query, NULL, RS( restorer, F_FILEPATH ) );
       t_find_file( restorer->task, &query );
       restorer->file_map[ i ] = query.file;
-      list_append( &restorer->lib->files, query.file );
+      zbcx_list_append( &restorer->lib->files, query.file );
    }
    RF( restorer, F_END );
 }
@@ -708,16 +708,16 @@ static void restore_namespace( struct restorer* restorer, bool upmost ) {
       restorer->ns_fragment = t_alloc_ns_fragment();
       t_append_unresolved_namespace_object( parent_fragment,
          &restorer->ns_fragment->object );
-      list_append( &parent_fragment->objects, restorer->ns_fragment );
-      list_append( &parent_fragment->runnables, restorer->ns_fragment );
-      list_append( &parent_fragment->fragments, restorer->ns_fragment );
+      zbcx_list_append( &parent_fragment->objects, restorer->ns_fragment );
+      zbcx_list_append( &parent_fragment->runnables, restorer->ns_fragment );
+      zbcx_list_append( &parent_fragment->fragments, restorer->ns_fragment );
    }
    RV( restorer, F_STRICT, &restorer->ns_fragment->strict );
    restore_namespace_path( restorer );
    restore_namespace_list( restorer );
    restore_namespace_member_list( restorer );
    if ( ! upmost ) {
-      list_append( &restorer->ns_fragment->ns->fragments,
+      zbcx_list_append( &restorer->ns_fragment->ns->fragments,
          restorer->ns_fragment );
    }
    restorer->ns_fragment = parent_fragment;
@@ -757,7 +757,7 @@ static void restore_namespace_list( struct restorer* restorer ) {
             struct ns* ns = t_alloc_ns( name );
             ns->object.pos = path->pos;
             ns->parent = restorer->ns;
-            list_append( &restorer->task->namespaces, ns );
+            zbcx_list_append( &restorer->task->namespaces, ns );
             name->object = &ns->object;
          }
          restorer->ns = ( struct ns* ) name->object;
@@ -835,8 +835,8 @@ static void restore_constant( struct restorer* restorer ) {
       RV( restorer, F_VALUE, &constant->value );
    }
    RF( restorer, F_END );
-   list_append( &restorer->ns_fragment->objects, constant );
-   list_append( &restorer->lib->objects, constant );
+   zbcx_list_append( &restorer->ns_fragment->objects, constant );
+   zbcx_list_append( &restorer->lib->objects, constant );
    constant->object.resolved = true;
 }
 
@@ -857,8 +857,8 @@ static struct enumeration* restore_enumeration( struct restorer* restorer ) {
    }
    RV( restorer, F_BASETYPE, &enumeration->base_type );
    RF( restorer, F_END );
-   list_append( &restorer->ns_fragment->objects, enumeration );
-   list_append( &restorer->lib->objects, enumeration );
+   zbcx_list_append( &restorer->ns_fragment->objects, enumeration );
+   zbcx_list_append( &restorer->lib->objects, enumeration );
    enumeration->object.resolved = true;
    return enumeration;
 }
@@ -904,8 +904,8 @@ static struct structure* restore_structure( struct restorer* restorer ) {
       restore_structure_member( restorer, structure );
    }
    RF( restorer, F_END );
-   list_append( &restorer->ns_fragment->objects, structure );
-   list_append( &restorer->lib->objects, structure );
+   zbcx_list_append( &restorer->ns_fragment->objects, structure );
+   zbcx_list_append( &restorer->lib->objects, structure );
    t_append_unresolved_namespace_object( restorer->ns_fragment,
       &structure->object );
    return structure;
@@ -1075,7 +1075,7 @@ static void restore_type_alias( struct restorer* restorer ) {
       alias->path = spec.path;
       alias->original_spec = spec.spec;
       alias->spec = alias->original_spec;
-      list_append( &restorer->ns_fragment->objects, alias );
+      zbcx_list_append( &restorer->ns_fragment->objects, alias );
       t_append_unresolved_namespace_object( restorer->ns_fragment,
          &alias->object );
    }
@@ -1105,9 +1105,9 @@ static void restore_var( struct restorer* restorer ) {
       var->storage = storage;
       RV( restorer, F_INDEX, &var->index );
       var->imported = true;
-      list_append( &restorer->lib->vars, var );
-      list_append( &restorer->lib->objects, var );
-      list_append( &restorer->ns_fragment->objects, var );
+      zbcx_list_append( &restorer->lib->vars, var );
+      zbcx_list_append( &restorer->lib->objects, var );
+      zbcx_list_append( &restorer->ns_fragment->objects, var );
       t_append_unresolved_namespace_object( restorer->ns_fragment,
          &var->object );
    }
@@ -1135,12 +1135,12 @@ static void restore_func( struct restorer* restorer ) {
    RV( restorer, F_MAXPARAM, &func->max_param );
    func->imported = true;
    RF( restorer, F_END );
-   list_append( &restorer->lib->objects, func );
-   list_append( &restorer->ns_fragment->objects, func );
-   list_append( &restorer->ns_fragment->runnables, func );
+   zbcx_list_append( &restorer->lib->objects, func );
+   zbcx_list_append( &restorer->ns_fragment->objects, func );
+   zbcx_list_append( &restorer->ns_fragment->runnables, func );
    if ( func->type == FUNC_USER ) {
-      list_append( &restorer->lib->funcs, func );
-      list_append( &restorer->ns_fragment->funcs, func );
+      zbcx_list_append( &restorer->lib->funcs, func );
+      zbcx_list_append( &restorer->ns_fragment->funcs, func );
    }
    t_append_unresolved_namespace_object( restorer->ns_fragment,
       &func->object );
@@ -1261,10 +1261,10 @@ static void restore_script( struct restorer* restorer ) {
    RV( restorer, F_TYPE, &script->type );
    RV( restorer, F_FLAGS, &script->flags );
    RF( restorer, F_END );
-   list_append( &restorer->lib->scripts, script );
-   list_append( &restorer->lib->objects, script );
-   list_append( &restorer->ns_fragment->scripts, script );
-   list_append( &restorer->ns_fragment->runnables, script );
+   zbcx_list_append( &restorer->lib->scripts, script );
+   zbcx_list_append( &restorer->lib->objects, script );
+   zbcx_list_append( &restorer->ns_fragment->scripts, script );
+   zbcx_list_append( &restorer->ns_fragment->runnables, script );
 }
 
 static void restore_pos( struct restorer* restorer, struct pos* pos ) {

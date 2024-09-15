@@ -2171,7 +2171,7 @@ static void test_buildmsg( struct semantic* semantic,
    struct buildmsg_usage* usage = mem_alloc( sizeof( *usage ) );
    usage->buildmsg = expr_test->buildmsg;
    usage->point = NULL;
-   list_append( &expr_test->buildmsg->usages, usage );
+   zbcx_list_append( &expr_test->buildmsg->usages, usage );
    struct format_item* item = t_alloc_format_item();
    item->cast = FCAST_BUILDMSG;
    struct format_item_buildmsg* extra = mem_alloc( sizeof( *extra ) );
@@ -2230,13 +2230,13 @@ static void test_remaining_args( struct semantic* semantic,
    struct expr_test* expr_test, struct call_test* test ) {
    struct param* param = test->params;
    struct list_iter i;
-   list_iterate( &test->call->args, &i );
-   while ( ! list_end( &i ) ) {
-      test_remaining_arg( semantic, expr_test, test, param, list_data( &i ) );
+   zbcx_list_iterate( &test->call->args, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      test_remaining_arg( semantic, expr_test, test, param, zbcx_list_data( &i ) );
       if ( param ) {
          param = param->next;
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
 }
 

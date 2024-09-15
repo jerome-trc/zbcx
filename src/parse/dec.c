@@ -354,12 +354,12 @@ static void read_enum_def( struct parse* parse, struct dec* dec ) {
    dec->enumeration = enumeration;
    dec->spec = SPEC_ENUM;
    if ( dec->vars ) {
-      list_append( dec->vars, enumeration );
+      zbcx_list_append( dec->vars, enumeration );
    }
    else {
       p_add_unresolved( parse, &enumeration->object );
-      list_append( &parse->ns_fragment->objects, enumeration );
-      list_append( &parse->lib->objects, enumeration );
+      zbcx_list_append( &parse->ns_fragment->objects, enumeration );
+      zbcx_list_append( &parse->lib->objects, enumeration );
    }
    if ( dec->implicit_type_alias.specified ) {
       struct dec implicit_dec;
@@ -520,14 +520,14 @@ static void read_struct_def( struct parse* parse, struct dec* dec ) {
    dec->spec = SPEC_STRUCT;
    // Nested struct is in the same scope as the parent struct.
    if ( dec->vars ) {
-      list_append( dec->vars, structure );
+      zbcx_list_append( dec->vars, structure );
    }
    else {
       p_add_unresolved( parse, &structure->object );
-      list_append( &parse->ns_fragment->objects, structure );
-      list_append( &parse->lib->objects, structure );
+      zbcx_list_append( &parse->ns_fragment->objects, structure );
+      zbcx_list_append( &parse->lib->objects, structure );
    }
-   list_append( &parse->task->structures, structure );
+   zbcx_list_append( &parse->task->structures, structure );
    if ( dec->implicit_type_alias.specified ) {
       struct dec implicit_dec;
       p_init_dec( &implicit_dec );
@@ -1448,25 +1448,25 @@ static void add_var( struct parse* parse, struct dec* dec ) {
    var->imported = parse->lib->imported;
    if ( dec->area == DEC_TOP ) {
       p_add_unresolved( parse, &var->object );
-      list_append( &parse->lib->objects, var );
-      list_append( &parse->ns_fragment->objects, var );
+      zbcx_list_append( &parse->lib->objects, var );
+      zbcx_list_append( &parse->ns_fragment->objects, var );
       if ( dec->external ) {
-         list_append( &parse->lib->external_vars, var );
+         zbcx_list_append( &parse->lib->external_vars, var );
       }
       else {
-         list_append( &parse->lib->vars, var );
+         zbcx_list_append( &parse->lib->vars, var );
       }
    }
    else if ( dec->area == DEC_LOCAL || dec->area == DEC_FOR ) {
       if ( dec->vars ) {
-         list_append( dec->vars, var );
+         zbcx_list_append( dec->vars, var );
       }
       if ( dec->static_qual ) {
          var->hidden = true;
-         list_append( &parse->lib->vars, var );
+         zbcx_list_append( &parse->lib->vars, var );
       }
       else {
-         list_append( parse->local_vars, var );
+         zbcx_list_append( parse->local_vars, var );
       }
    }
    else {
@@ -1520,10 +1520,10 @@ static void finish_type_alias( struct parse* parse, struct dec* dec ) {
    alias->hidden = dec->private_visibility;
    if ( dec->area == DEC_TOP ) {
       p_add_unresolved( parse, &alias->object );
-      list_append( &parse->ns_fragment->objects, alias );
+      zbcx_list_append( &parse->ns_fragment->objects, alias );
    }
    else {
-      list_append( dec->vars, alias );
+      zbcx_list_append( dec->vars, alias );
    }
    if ( dec->type_alias_object ) {
       dec->type_alias_object->next_instance = alias;
@@ -1779,13 +1779,13 @@ void p_read_paren_type( struct parse* parse, struct paren_reading* reading ) {
       read_func_body( parse, &dec, func );
       if ( dec.area == DEC_TOP ) {
          p_add_unresolved( parse, &func->object );
-         list_append( &parse->lib->funcs, func );
-         list_append( &parse->ns_fragment->funcs, func );
-         list_append( &parse->ns_fragment->runnables, func );
+         zbcx_list_append( &parse->lib->funcs, func );
+         zbcx_list_append( &parse->ns_fragment->funcs, func );
+         zbcx_list_append( &parse->ns_fragment->runnables, func );
       }
       else {
          if ( ! ( ( struct func_user* ) func->impl )->local ) {
-            list_append( &parse->lib->funcs, func );
+            zbcx_list_append( &parse->lib->funcs, func );
             func->hidden = true;
          }
       }
@@ -1855,24 +1855,24 @@ static void read_func( struct parse* parse, struct dec* dec ) {
    }
    if ( dec->area == DEC_TOP ) {
       p_add_unresolved( parse, &func->object );
-      list_append( &parse->ns_fragment->objects, func );
-      list_append( &parse->lib->objects, func );
+      zbcx_list_append( &parse->ns_fragment->objects, func );
+      zbcx_list_append( &parse->lib->objects, func );
       if ( func->type == FUNC_USER ) {
          if ( func->external ) {
-            list_append( &parse->lib->external_funcs, func );
+            zbcx_list_append( &parse->lib->external_funcs, func );
          }
          else {
-            list_append( &parse->lib->funcs, func );
-            list_append( &parse->ns_fragment->funcs, func );
-            list_append( &parse->ns_fragment->runnables, func );
+            zbcx_list_append( &parse->lib->funcs, func );
+            zbcx_list_append( &parse->ns_fragment->funcs, func );
+            zbcx_list_append( &parse->ns_fragment->runnables, func );
          }
       }
    }
    else {
-      list_append( dec->vars, func );
+      zbcx_list_append( dec->vars, func );
       if ( func->type == FUNC_USER &&
          ! ( ( struct func_user* ) func->impl )->local ) {
-         list_append( &parse->lib->funcs, func );
+         zbcx_list_append( &parse->lib->funcs, func );
          func->hidden = true;
       }
    }
@@ -2348,10 +2348,10 @@ static struct script* add_script( struct parse* parse,
    script->flags = reading->flags;
    script->params = reading->param;
    script->num_param = reading->num_param;
-   list_append( &parse->lib->scripts, script );
-   list_append( &parse->lib->objects, script );
-   list_append( &parse->ns_fragment->scripts, script );
-   list_append( &parse->ns_fragment->runnables, script );
+   zbcx_list_append( &parse->lib->scripts, script );
+   zbcx_list_append( &parse->lib->objects, script );
+   zbcx_list_append( &parse->ns_fragment->scripts, script );
+   zbcx_list_append( &parse->ns_fragment->runnables, script );
    return script;
 }
 
@@ -2430,8 +2430,8 @@ static void read_special( struct parse* parse ) {
       }
    }
    p_add_unresolved( parse, &func->object );
-   list_append( &parse->ns_fragment->objects, func );
-   list_append( &parse->lib->objects, func );
+   zbcx_list_append( &parse->ns_fragment->objects, func );
+   zbcx_list_append( &parse->lib->objects, func );
 }
 
 static void init_special_reading( struct special_reading* reading ) {

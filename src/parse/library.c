@@ -88,7 +88,7 @@ static void unbind_namespaces( struct parse* parse );
 void p_read_target_lib( struct parse* parse ) {
    read_main_module( parse );
    perform_library_imports( parse );
-   list_append( &parse->task->libraries, parse->task->library_main );
+   zbcx_list_append( &parse->task->libraries, parse->task->library_main );
    determine_needed_library_links( parse );
    determine_hidden_objects( parse );
    unbind_namespaces( parse );
@@ -131,9 +131,9 @@ static void read_namespace( struct parse* parse ) {
    fragment->hidden = qualifiers.private_visibility;
    fragment->strict = qualifiers.strict;
    t_append_unresolved_namespace_object( parent_fragment, &fragment->object );
-   list_append( &parent_fragment->objects, fragment );
-   list_append( &parent_fragment->runnables, fragment );
-   list_append( &parent_fragment->fragments, fragment );
+   zbcx_list_append( &parent_fragment->objects, fragment );
+   zbcx_list_append( &parent_fragment->runnables, fragment );
+   zbcx_list_append( &parent_fragment->fragments, fragment );
    parse->ns_fragment = fragment;
    p_read_tk( parse );
    read_namespace_name( parse );
@@ -180,7 +180,7 @@ static void read_namespace_name( struct parse* parse ) {
             struct ns* nested_ns = t_alloc_ns( name );
             nested_ns->object.pos = path->pos;
             nested_ns->parent = ns;
-            list_append( &parse->task->namespaces, nested_ns );
+            zbcx_list_append( &parse->task->namespaces, nested_ns );
             nested_ns->object.next_scope = name->object;
             name->object = &nested_ns->object;
          }
@@ -195,7 +195,7 @@ static void read_namespace_name( struct parse* parse ) {
       // A nameless namespace fragment is a fragment of the parent namespace.
       parse->ns_fragment->ns = parse->ns;
    }
-   list_append( &parse->ns->fragments, parse->ns_fragment );
+   zbcx_list_append( &parse->ns->fragments, parse->ns_fragment );
 }
 
 static void read_namespace_path( struct parse* parse ) {
@@ -317,7 +317,7 @@ static void read_using( struct parse* parse, struct list* output,
    }
    p_test_tk( parse, TK_SEMICOLON );
    p_read_tk( parse );
-   list_append( output, dirc );
+   zbcx_list_append( output, dirc );
 }
 
 void p_read_local_using( struct parse* parse, struct list* output ) {
@@ -328,7 +328,7 @@ static struct using_dirc* alloc_using( struct pos* pos ) {
    struct using_dirc* dirc = mem_alloc( sizeof( *dirc ) );
    dirc->node.type = NODE_USING;
    dirc->path = NULL;
-   list_init( &dirc->items );
+   zbcx_list_init( &dirc->items );
    dirc->pos = *pos;
    dirc->type = USING_ALL;
    dirc->force_local_scope = false;
@@ -386,7 +386,7 @@ static void read_using_item( struct parse* parse, struct using_dirc* dirc ) {
       item->name = parse->tk_text;
       p_read_tk( parse );
    }
-   list_append( &dirc->items, item );
+   zbcx_list_append( &dirc->items, item );
 }
 
 static struct using_item* alloc_using_item( void ) {
@@ -653,8 +653,8 @@ static void read_define( struct parse* parse ) {
    constant->value_node = value.output_node;
    constant->hidden = hidden;
    p_add_unresolved( parse, &constant->object );
-   list_append( &parse->lib->objects, constant );
-   list_append( &parse->ns_fragment->objects, constant );
+   zbcx_list_append( &parse->lib->objects, constant );
+   zbcx_list_append( &parse->ns_fragment->objects, constant );
 }
 
 static void read_import( struct parse* parse, struct pos* pos ) {
@@ -664,7 +664,7 @@ static void read_import( struct parse* parse, struct pos* pos ) {
    struct import_dirc* dirc = alloc_import_dirc();
    dirc->file_path = parse->tk_text;
    dirc->pos = parse->tk_pos;
-   list_append( &parse->lib->import_dircs, dirc );
+   zbcx_list_append( &parse->lib->import_dircs, dirc );
    p_read_tk( parse );
 }
 
@@ -706,9 +706,9 @@ static void read_library_name( struct parse* parse, struct pos* pos ) {
    }
    // Each library must have a unique name.
    struct list_iter i;
-   list_iterate( &parse->task->libraries, &i );
-   while ( ! list_end( &i ) ) {
-      struct library* lib = list_data( &i );
+   zbcx_list_iterate( &parse->task->libraries, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct library* lib = zbcx_list_data( &i );
       if ( lib != parse->lib &&
          strcmp( parse->tk_text, lib->name.value ) == 0 ) {
          p_diag( parse, DIAG_POS_ERR, pos,
@@ -717,7 +717,7 @@ static void read_library_name( struct parse* parse, struct pos* pos ) {
             "library name previously found here" );
          p_bail( parse );
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    str_append( &parse->lib->name, parse->tk_text );
    parse->lib->name_pos = *pos;
@@ -753,14 +753,14 @@ static void add_library_link( struct parse* parse, const char* name,
    test_library_name( parse, pos, name, strlen( name ) );
    struct library_link* link = NULL;
    struct list_iter i;
-   list_iterate( &parse->lib->links, &i );
-   while ( ! list_end( &i ) ) {
-      struct library_link* other_link = list_data( &i );
+   zbcx_list_iterate( &parse->lib->links, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct library_link* other_link = zbcx_list_data( &i );
       if ( strcmp( other_link->name, name ) == 0 ) {
          link = other_link;
          break;
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    if ( link ) {
       p_diag( parse, DIAG_POS | DIAG_WARN, pos,
@@ -773,18 +773,18 @@ static void add_library_link( struct parse* parse, const char* name,
       link->name = name;
       link->needed = false;
       memcpy( &link->pos, pos, sizeof( *pos ) );
-      list_append( &parse->lib->links, link );
+      zbcx_list_append( &parse->lib->links, link );
    }
 }
 
 void p_create_cmdline_library_links( struct parse* parse ) {
    struct list_iter i;
-   list_iterate( &parse->task->options->library_links, &i );
-   while ( ! list_end( &i ) ) {
+   zbcx_list_iterate( &parse->task->options->library_links, &i );
+   while ( ! zbcx_list_end( &i ) ) {
       struct pos pos;
       t_init_pos_id( &pos, INTERNALFILE_COMMANDLINE );
-      add_library_link( parse, list_data( &i ), &pos );
-      list_next( &i );
+      add_library_link( parse, zbcx_list_data( &i ), &pos );
+      zbcx_list_next( &i );
    }
 }
 
@@ -839,10 +839,10 @@ void p_add_unresolved( struct parse* parse, struct object* object ) {
 
 static void perform_library_imports( struct parse* parse ) {
    struct list_iter i;
-   list_iterate( &parse->lib->import_dircs, &i );
-   while ( ! list_end( &i ) ) {
-      import_lib( parse, list_data( &i ) );
-      list_next( &i );
+   zbcx_list_iterate( &parse->lib->import_dircs, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      import_lib( parse, zbcx_list_data( &i ) );
+      zbcx_list_next( &i );
    }
 }
 
@@ -878,14 +878,14 @@ static void load_imported_lib( struct parse* parse,
    struct library_request* request ) {
    // Return the library if it is already loaded.
    struct list_iter i;
-   list_iterate( &parse->task->libraries, &i );
-   while ( ! list_end( &i ) ) {
-      struct library* lib = list_data( &i );
+   zbcx_list_iterate( &parse->task->libraries, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct library* lib = zbcx_list_data( &i );
       if ( lib->file == request->file ) {
          request->lib = lib;
          return;
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    // Otherwise, load a fresh copy of the library.
    load_imported_lib_from_storage( parse, request );
@@ -908,7 +908,7 @@ static void load_imported_lib_from_storage( struct parse* parse,
    }
    // Common initialization for cached and freshly-read libraries.
    lib->imported = true;
-   list_append( &parse->task->libraries, lib );
+   zbcx_list_append( &parse->task->libraries, lib );
    // Read library from source file.
    if ( ! cached ) {
       read_imported_lib( parse, request, lib );
@@ -942,9 +942,9 @@ static void read_imported_lib( struct parse* parse,
 static void append_imported_lib( struct parse* parse, struct import_dirc* dirc,
    struct library* lib ) {
    struct list_iter i;
-   list_iterate( &parse->lib->import_dircs, &i );
-   while ( ! list_end( &i ) ) {
-      struct import_dirc* prev_dirc = list_data( &i );
+   zbcx_list_iterate( &parse->lib->import_dircs, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct import_dirc* prev_dirc = zbcx_list_data( &i );
       if ( prev_dirc->lib == lib ) {
          p_diag( parse, DIAG_WARN | DIAG_POS, &dirc->pos,
             "duplicate import of library" );
@@ -952,62 +952,62 @@ static void append_imported_lib( struct parse* parse, struct import_dirc* dirc,
             "library previously imported here" );
          return;
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
-   list_append( &parse->lib->dynamic, lib );
-   list_append( &parse->lib->dynamic_bcs, lib );
+   zbcx_list_append( &parse->lib->dynamic, lib );
+   zbcx_list_append( &parse->lib->dynamic_bcs, lib );
    dirc->lib = lib;
 }
 
 static void determine_needed_library_links( struct parse* parse ) {
    struct list_iter i;
-   list_iterate( &parse->task->library_main->links, &i );
-   while ( ! list_end( &i ) ) {
-      struct library_link* link = list_data( &i );
+   zbcx_list_iterate( &parse->task->library_main->links, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct library_link* link = zbcx_list_data( &i );
       // Ignore a self-referential link.
       if ( strcmp( link->name, parse->task->library_main->name.value ) != 0 ) {
          // If a library is #imported, a link for it is not necessary.
          struct list_iter k;
-         list_iterate( &parse->task->library_main->dynamic, &k );
-         while ( ! list_end( &k ) ) {
-            struct library* lib = list_data( &k );
+         zbcx_list_iterate( &parse->task->library_main->dynamic, &k );
+         while ( ! zbcx_list_end( &k ) ) {
+            struct library* lib = zbcx_list_data( &k );
             if ( strcmp( link->name, lib->name.value ) == 0 ) {
                break;
             }
-            list_next( &k );
+            zbcx_list_next( &k );
          }
-         if ( list_end( &k ) ) {
+         if ( zbcx_list_end( &k ) ) {
             link->needed = true;
          }
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
 }
 
 static void determine_hidden_objects( struct parse* parse ) {
    // Determine private objects.
    struct list_iter i;
-   list_iterate( &parse->task->libraries, &i );
-   while ( ! list_end( &i ) ) {
-      struct library* lib = list_data( &i );
+   zbcx_list_iterate( &parse->task->libraries, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct library* lib = zbcx_list_data( &i );
       collect_private_objects( parse, lib, lib->upmost_ns_fragment );
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    // Determine private namespaces.
-   list_iterate( &parse->task->namespaces, &i );
-   while ( ! list_end( &i ) ) {
-      struct ns* ns = list_data( &i );
+   zbcx_list_iterate( &parse->task->namespaces, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct ns* ns = zbcx_list_data( &i );
       ns->hidden = is_private_namespace( ns );
-      list_next( &i );
+      zbcx_list_next( &i );
    }
 }
 
 static void collect_private_objects( struct parse* parse, struct library* lib,
    struct ns_fragment* fragment ) {
    struct list_iter i;
-   list_iterate( &fragment->objects, &i );
-   while ( ! list_end( &i ) ) {
-      struct object* object = list_data( &i );
+   zbcx_list_iterate( &fragment->objects, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct object* object = zbcx_list_data( &i );
       // Determine whether the object should be hidden.
       bool hidden = false;
       switch ( object->node.type ) {
@@ -1061,31 +1061,31 @@ static void collect_private_objects( struct parse* parse, struct library* lib,
       }
       // Add object to the hidden list.
       if ( hidden ) {
-         list_append( &lib->private_objects, object );
+         zbcx_list_append( &lib->private_objects, object );
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
 }
 
 static bool is_private_namespace( struct ns* ns ) {
    struct list_iter i;
-   list_iterate( &ns->fragments, &i );
-   while ( ! list_end( &i ) ) {
-      struct ns_fragment* fragment = list_data( &i );
+   zbcx_list_iterate( &ns->fragments, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct ns_fragment* fragment = zbcx_list_data( &i );
       if ( ! fragment->hidden ) {
          return false;
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
    return true;
 }
 
 static void unbind_namespaces( struct parse* parse ) {
    struct list_iter i;
-   list_iterate( &parse->task->namespaces, &i );
-   while ( ! list_end( &i ) ) {
-      struct ns* ns = list_data( &i );
+   zbcx_list_iterate( &parse->task->namespaces, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct ns* ns = zbcx_list_data( &i );
       ns->name->object = ns->name->object->next_scope;
-      list_next( &i );
+      zbcx_list_next( &i );
    }
 }

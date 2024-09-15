@@ -55,16 +55,16 @@ void c_write_user_code( struct codegen* codegen ) {
    }
    // Scripts.
    struct list_iter i;
-   list_iterate( &codegen->task->library_main->scripts, &i );
-   while ( ! list_end( &i ) ) {
-      write_script( codegen, list_data( &i ) );
-      list_next( &i );
+   zbcx_list_iterate( &codegen->task->library_main->scripts, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      write_script( codegen, zbcx_list_data( &i ) );
+      zbcx_list_next( &i );
    }
    // Functions.
-   list_iterate( &codegen->task->library_main->funcs, &i );
-   while ( ! list_end( &i ) ) {
-      write_func( codegen, list_data( &i ) );
-      list_next( &i );
+   zbcx_list_iterate( &codegen->task->library_main->funcs, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      write_func( codegen, zbcx_list_data( &i ) );
+      zbcx_list_next( &i );
    }
    // When utilizing the Little-E format, where instructions can be of
    // different size, add padding so any following data starts at an offset
@@ -181,9 +181,9 @@ static void alloc_param_indexes( struct func_record* func,
 static void alloc_funcscopevars_indexes( struct func_record* func,
    struct list* vars ) {
    struct list_iter i;
-   list_iterate( vars, &i );
-   while ( ! list_end( &i ) ) {
-      struct var* var = list_data( &i );
+   zbcx_list_iterate( vars, &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      struct var* var = zbcx_list_data( &i );
       if ( var->storage == STORAGE_LOCAL ) {
          switch ( var->desc ) {
          case DESC_ARRAY:
@@ -201,7 +201,7 @@ static void alloc_funcscopevars_indexes( struct func_record* func,
             UNREACHABLE();
          }
       }
-      list_next( &i );
+      zbcx_list_next( &i );
    }
 }
 

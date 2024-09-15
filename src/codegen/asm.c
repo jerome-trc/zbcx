@@ -9,11 +9,11 @@ static void write_expr_arg( struct codegen* codegen,
 void p_visit_inline_asm( struct codegen* codegen,
    struct inline_asm* inline_asm ) {
    struct list_iter i;
-   list_iterate( &inline_asm->args, &i );
+   zbcx_list_iterate( &inline_asm->args, &i );
    c_unoptimized_opc( codegen, inline_asm->opcode );
-   while ( ! list_end( &i ) ) {
-      write_arg( codegen, list_data( &i ) );
-      list_next( &i );
+   while ( ! zbcx_list_end( &i ) ) {
+      write_arg( codegen, zbcx_list_data( &i ) );
+      zbcx_list_next( &i );
    }
 }
 

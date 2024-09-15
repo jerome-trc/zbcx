@@ -886,7 +886,7 @@ static void read_call_args( struct parse* parse, struct expr_reading* reading,
       struct expr_reading arg;
       p_init_expr_reading( &arg, reading->in_constant, false, false, true );
       p_read_expr( parse, &arg );
-      list_append( args, arg.output_node );
+      zbcx_list_append( args, arg.output_node );
       if ( parse->tk == TK_COMMA ) {
          p_read_tk( parse );
       }
