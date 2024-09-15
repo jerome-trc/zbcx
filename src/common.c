@@ -612,6 +612,10 @@ bool c_is_absolute_path( const char* path ) {
 #include <linux/limits.h> // And on Linux it is in linux/limits.h
 #endif
 
+// Declared independently for toolchains which don't have it in their POSIX headers,
+// such as that of Zig as of 0.13.0.
+char *realpath(const char *restrict path, char *restrict resolved_path);
+
 bool c_read_full_path( const char* path, struct str* str ) {
    str_grow( str, PATH_MAX + 1 );
    if ( realpath( path, str->value ) ) {
