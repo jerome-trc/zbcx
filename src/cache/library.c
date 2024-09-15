@@ -148,7 +148,7 @@ static void save_file_map( struct saver* saver ) {
    WF( saver, F_FILEMAP );
    int size = zbcx_list_size( &saver->lib->files );
    WV( saver, F_SIZE, &size );
-   struct list_iter i;
+   zbcx_ListIter i;
    zbcx_list_iterate( &saver->lib->files, &i );
    while ( ! zbcx_list_end( &i ) ) {
       struct file_entry* file = zbcx_list_data( &i );
@@ -182,7 +182,7 @@ static void save_namespace_path( struct saver* saver,
 static void save_namespace_member_list( struct saver* saver,
    struct ns_fragment* fragment ) {
    // Objects.
-   struct list_iter i;
+   zbcx_ListIter i;
    zbcx_list_iterate( &fragment->objects, &i );
    while ( ! zbcx_list_end( &i ) ) {
       save_namespace_member( saver, zbcx_list_data( &i ) );
@@ -576,7 +576,7 @@ static void save_pos( struct saver* saver, struct pos* pos ) {
 }
 
 static int map_file( struct saver* saver, int id ) {
-   struct list_iter i;
+   zbcx_ListIter i;
    zbcx_list_iterate( &saver->lib->files, &i );
    int map_id = 0;
    while ( ! zbcx_list_end( &i ) ) {

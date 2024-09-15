@@ -29,7 +29,7 @@ void* zbcx_list_head(zbcx_List* list);
 void* zbcx_list_tail(zbcx_List* list);
 void zbcx_list_append(zbcx_List*, void* data);
 void zbcx_list_prepend(zbcx_List*, void* data);
-void zbcx_list_iterate(zbcx_List* list, zbcx_ListIter* iter);
+void zbcx_list_iterate(const zbcx_List* list, zbcx_ListIter* iter);
 bool zbcx_list_end(zbcx_ListIter* iter);
 void zbcx_list_next(zbcx_ListIter* iter);
 void* zbcx_list_data(zbcx_ListIter* iter);

@@ -241,7 +241,7 @@ static void init_builtin_aliases( struct semantic* semantic,
 static void bind_builtin_aliases( struct semantic* semantic,
    struct builtin_aliases* aliases );
 static void init_func_test( struct func_test* test, struct func_test* parent,
-   struct func* func, struct list* labels, struct list* funcscope_vars,
+   struct func* func, zbcx_List* labels, zbcx_List* funcscope_vars,
    struct script* script );
 static void calc_param_size( struct param* param );
 static int calc_size( struct dim* dim, struct structure* structure,
@@ -2304,7 +2304,7 @@ void s_init_magic_id( struct magic_id* magic_id, int name ) {
 }
 
 static void init_func_test( struct func_test* test, struct func_test* parent,
-   struct func* func, struct list* labels, struct list* funcscope_vars,
+   struct func* func, zbcx_List* labels, zbcx_List* funcscope_vars,
    struct script* script ) {
    test->func = func;
    test->labels = labels;

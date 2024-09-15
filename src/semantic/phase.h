@@ -40,8 +40,8 @@ struct type_info {
 
 struct func_test {
    struct func* func;
-   struct list* labels;
-   struct list* funcscope_vars;
+   zbcx_List* labels;
+   zbcx_List* funcscope_vars;
    struct func* nested_funcs;
    struct return_stmt* returns;
    struct func_test* parent;

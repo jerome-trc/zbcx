@@ -219,7 +219,7 @@ void cache_add( struct cache* cache, struct library* lib ) {
       entry->dependency = NULL;
    }
    // Update entry.
-   struct list_iter i;
+   zbcx_ListIter i;
    zbcx_list_iterate( &lib->files, &i );
    while ( ! zbcx_list_end( &i ) ) {
       struct file_entry* file = zbcx_list_data( &i );

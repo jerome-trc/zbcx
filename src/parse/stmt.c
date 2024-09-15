@@ -62,7 +62,7 @@ void t_print_name( struct name* name ) {
    str_deinit( &str );
 }
 
-void p_init_stmt_reading( struct stmt_reading* reading, struct list* labels ) {
+void p_init_stmt_reading( struct stmt_reading* reading, zbcx_List* labels ) {
    reading->labels = labels;
    reading->node = NULL;
    reading->block_node = NULL;

@@ -246,7 +246,7 @@ void p_init_dec( struct dec* dec ) {
 }
 
 void p_init_for_dec( struct parse* parse, struct dec* dec,
-   struct list* vars ) {
+   zbcx_List* vars ) {
    p_init_dec( dec );
    dec->area = DEC_FOR;
    dec->name_offset = parse->ns->body;
@@ -2022,7 +2022,7 @@ void p_read_func_body( struct parse* parse, struct func* func ) {
    struct stmt_reading body;
    p_init_stmt_reading( &body, &impl->labels );
    // TODO: Remove `parse.local_vars` fields.
-   struct list* prev_local_vars = parse->local_vars;
+   zbcx_List* prev_local_vars = parse->local_vars;
    parse->local_vars = &impl->vars;
    p_read_top_block( parse, &body, true );
    impl->body = body.block_node;

@@ -63,7 +63,7 @@ void c_write_block( struct codegen* codegen, struct block* stmt ) {
    struct local_record record;
    init_local_record( codegen, &record );
    push_local_record( codegen, &record );
-   struct list_iter i;
+   zbcx_ListIter i;
    zbcx_list_iterate( &stmt->stmts, &i );
    while ( ! zbcx_list_end( &i ) ) {
       write_block_item( codegen, zbcx_list_data( &i ) );
@@ -568,7 +568,7 @@ static void visit_for( struct codegen* codegen, struct for_stmt* stmt ) {
    struct local_record record;
    init_local_record( codegen, &record );
    push_local_record( codegen, &record );
-   struct list_iter i;
+   zbcx_ListIter i;
    zbcx_list_iterate( &stmt->init, &i );
    while ( ! zbcx_list_end( &i ) ) {
       struct node* node = zbcx_list_data( &i );
@@ -1190,7 +1190,7 @@ static void write_multi_usage_msgbuild_block( struct codegen* codegen,
    c_write_block( codegen, buildmsg->block );
    // Create jumps into the message-building block.
    unsigned int entry_number = 0;
-   struct list_iter i;
+   zbcx_ListIter i;
    zbcx_list_iterate( &buildmsg->usages, &i );
    while ( ! zbcx_list_end( &i ) ) {
       struct buildmsg_usage* usage = zbcx_list_data( &i );
@@ -1227,7 +1227,7 @@ static void write_multi_usage_msgbuild_block( struct codegen* codegen,
 
 static void visit_expr_stmt( struct codegen* codegen,
    struct expr_stmt* stmt ) {
-   struct list_iter i;
+   zbcx_ListIter i;
    zbcx_list_iterate( &stmt->expr_list, &i );
    while ( ! zbcx_list_end( &i ) ) {
       c_visit_expr( codegen, zbcx_list_data( &i ) );

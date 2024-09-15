@@ -320,7 +320,7 @@ struct dec {
    struct name* name;
    struct name* name_offset;
    struct dim* dim;
-   struct list* vars;
+   zbcx_List* vars;
    struct var* var;
    struct structure_member* member;
    struct type_alias* type_alias_object;
@@ -359,7 +359,7 @@ struct dec {
 };
 
 struct stmt_reading {
-   struct list* labels;
+   zbcx_List* labels;
    struct node* node;
    struct block* block_node;
 };
@@ -436,7 +436,7 @@ struct parse {
    bool create_nltk;
    struct ns* ns;
    struct ns_fragment* ns_fragment;
-   struct list* local_vars;
+   zbcx_List* local_vars;
    struct library* lib;
    int main_lib_lines;
    int included_lines;
@@ -486,11 +486,11 @@ bool p_is_dec( struct parse* parse );
 bool p_is_local_dec( struct parse* parse );
 void p_init_dec( struct dec* dec );
 void p_init_for_dec( struct parse* parse, struct dec* dec,
-   struct list* vars );
+   zbcx_List* vars );
 void p_read_dec( struct parse* parse, struct dec* dec );
 void p_read_local_dec( struct parse* parse, struct dec* dec );
 void p_read_for_var( struct parse* parse, struct dec* dec );
-void p_init_stmt_reading( struct stmt_reading* reading, struct list* labels );
+void p_init_stmt_reading( struct stmt_reading* reading, zbcx_List* labels );
 enum tk p_peek( struct parse* parse );
 enum tk p_peek_2nd( struct parse* parse );
 struct token* p_peek_tk( struct parse* parse );
@@ -552,7 +552,7 @@ bool p_is_macro_defined( struct parse* parse, const char* name );
 void p_init_token( struct token* token );
 void p_pop_source( struct parse* parse );
 void p_create_cmdline_library_links( struct parse* parse );
-void p_read_local_using( struct parse* parse, struct list* output );
+void p_read_local_using( struct parse* parse, zbcx_List* output );
 bool p_read_let( struct parse* parse );
 bool p_is_paren_type( struct parse* parse );
 void p_init_paren_reading( struct parse* parse,

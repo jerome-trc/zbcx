@@ -2229,7 +2229,7 @@ static void test_call_args( struct semantic* semantic,
 static void test_remaining_args( struct semantic* semantic,
    struct expr_test* expr_test, struct call_test* test ) {
    struct param* param = test->params;
-   struct list_iter i;
+   zbcx_ListIter i;
    zbcx_list_iterate( &test->call->args, &i );
    while ( ! zbcx_list_end( &i ) ) {
       test_remaining_arg( semantic, expr_test, test, param, zbcx_list_data( &i ) );

@@ -8,6 +8,7 @@
 
 #include "common.h"
 #include "gbuf.h"
+#include "zbcx.h"
 
 #define MAX_LIB_NAME_LENGTH 8
 
@@ -472,7 +473,7 @@ struct call {
    struct ref_func* ref_func;
    struct nested_call* nested_call;
    struct format_item* format_item;
-   struct list args;
+   zbcx_List args;
    bool constant;
 };
 
@@ -570,7 +571,7 @@ struct return_stmt {
 
 struct block {
    struct node node;
-   struct list stmts;
+   zbcx_List stmts;
    struct pos pos;
 };
 
@@ -634,8 +635,8 @@ struct do_stmt {
 
 struct for_stmt {
    struct node node;
-   struct list init;
-   struct list post;
+   zbcx_List init;
+   zbcx_List post;
    struct cond cond;
    struct node* body;
    struct jump* jump_break;
@@ -655,7 +656,7 @@ struct foreach_stmt {
 struct buildmsg {
    struct expr* expr;
    struct block* block;
-   struct list usages;
+   zbcx_List usages;
 };
 
 struct buildmsg_usage {
@@ -670,7 +671,7 @@ struct buildmsg_stmt {
 
 struct expr_stmt {
    struct node node;
-   struct list expr_list;
+   zbcx_List expr_list;
 };
 
 struct dim {
@@ -884,7 +885,7 @@ struct func_format {
 
 // Functions created by the user.
 struct func_user {
-   struct list labels;
+   zbcx_List labels;
    struct block* body;
    struct func* next_nested;
    struct func* nested_funcs;
@@ -892,8 +893,8 @@ struct func_user {
    struct return_stmt* returns;
    struct c_point* prologue_point;
    struct c_sortedcasejump* return_table;
-   struct list vars;
-   struct list funcscope_vars;
+   zbcx_List vars;
+   zbcx_List funcscope_vars;
    int index;
    int size;
    int usage;
@@ -968,7 +969,7 @@ struct label {
    struct buildmsg* buildmsg;
    struct c_point* point;
    // goto statements that use this label.
-   struct list users;
+   zbcx_List users;
 };
 
 struct goto_stmt {
@@ -1014,9 +1015,9 @@ struct script {
    struct block* body;
    struct func* nested_funcs;
    struct call* nested_calls;
-   struct list labels;
-   struct list vars;
-   struct list funcscope_vars;
+   zbcx_List labels;
+   zbcx_List vars;
+   zbcx_List funcscope_vars;
    int assigned_number;
    int num_param;
    int offset;
@@ -1070,7 +1071,7 @@ struct inline_asm {
    struct pos pos;
    const char* name;
    struct inline_asm* next;
-   struct list args;
+   zbcx_List args;
    int opcode;
    int obj_pos;
 };
@@ -1117,7 +1118,7 @@ struct ns {
    struct name* body_structs;
    struct name* body_enums;
    struct ns_link* links;
-   struct list fragments;
+   zbcx_List fragments;
    bool hidden;
 };
 
@@ -1133,13 +1134,13 @@ struct ns_fragment {
    struct ns_path* path;
    struct object* unresolved;
    struct object* unresolved_tail;
-   struct list objects;
-   struct list funcs;
-   struct list scripts;
+   zbcx_List objects;
+   zbcx_List funcs;
+   zbcx_List scripts;
    // Contains functions, scripts, and namespace fragments.
-   struct list runnables;
-   struct list fragments;
-   struct list usings;
+   zbcx_List runnables;
+   zbcx_List fragments;
+   zbcx_List usings;
    // Enables: strong typing; block scoping of local objects.
    bool strict;
    bool hidden;
@@ -1154,7 +1155,7 @@ struct ns_path {
 struct using_dirc {
    struct node node;
    struct path* path;
-   struct list items;
+   zbcx_List items;
    struct pos pos;
    enum {
       USING_ALL,
@@ -1184,20 +1185,20 @@ struct import_dirc {
 struct library {
    struct str name;
    struct pos name_pos;
-   struct list vars;
-   struct list funcs;
-   struct list scripts;
-   struct list objects;
-   struct list private_objects;
+   zbcx_List vars;
+   zbcx_List funcs;
+   zbcx_List scripts;
+   zbcx_List objects;
+   zbcx_List private_objects;
    // #included/#imported libraries.
-   struct list import_dircs;
-   struct list dynamic;
-   struct list dynamic_acs;
-   struct list dynamic_bcs;
-   struct list links;
-   struct list files;
-   struct list external_vars;
-   struct list external_funcs;
+   zbcx_List import_dircs;
+   zbcx_List dynamic;
+   zbcx_List dynamic_acs;
+   zbcx_List dynamic_bcs;
+   zbcx_List links;
+   zbcx_List files;
+   zbcx_List external_vars;
+   zbcx_List external_funcs;
    struct ns_fragment* upmost_ns_fragment;
    struct file_entry* file;
    struct pos file_pos;
@@ -1236,7 +1237,7 @@ struct lang_limits {
 };
 
 struct task {
-   struct options* options;
+   const zbcx_Options* options;
    FILE* err_file;
    jmp_buf* bail;
    struct text_buffer* text_buffer;
@@ -1246,12 +1247,12 @@ struct task {
    struct indexed_string* empty_string;
    struct library* library_main;
    // Imported libraries come first, followed by the main library.
-   struct list libraries;
-   struct list namespaces;
+   zbcx_List libraries;
+   zbcx_List namespaces;
    int last_id;
    time_t compile_time;
    struct gbuf growing_buffer;
-   struct list runtime_asserts;
+   zbcx_List runtime_asserts;
    struct name* root_name;
    struct name* array_name;
    struct name* str_name;
@@ -1262,14 +1263,14 @@ struct task {
    struct expr* raw0_expr;
    struct ns* upmost_ns;
    struct str err_file_dir;
-   struct list include_history;
+   zbcx_List include_history;
    struct str* compiler_dir;
    struct str lib_dir;
    // The file printed in the last diagnostic.
    struct include_history_entry* last_diag_file;
    // All structs found during compilation, including local structs and structs
    // in imported libraries.
-   struct list structures;
+   zbcx_List structures;
 };
 
 #define DIAG_NONE 0
@@ -1284,7 +1285,7 @@ struct task {
 #define DIAG_POS DIAG_FILE | DIAG_LINE | DIAG_COLUMN
 #define DIAG_POS_ERR DIAG_POS | DIAG_ERR
 
-void t_init( struct task* task, struct options* options, jmp_buf* bail,
+void t_init( struct task* task, const zbcx_Options* options, jmp_buf* bail,
    struct str* compiler_dir );
 void t_copy_name( struct name*, bool full, struct str* buffer );
 int t_full_name_length( struct name* );

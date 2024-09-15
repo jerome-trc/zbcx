@@ -33,7 +33,7 @@ void p_test_inline_asm( struct semantic* semantic,
    struct stmt_test* stmt_test, struct inline_asm* inline_asm ) {
    struct test test = { .stmt_test = stmt_test, .inline_asm = inline_asm };
    test_name( semantic, &test );
-   struct list_iter i;
+   zbcx_ListIter i;
    zbcx_list_iterate( &inline_asm->args, &i );
    while ( ! zbcx_list_end( &i ) ) {
       test_arg( semantic, &test, zbcx_list_data( &i ) );
@@ -534,7 +534,7 @@ static void test_arg( struct semantic* semantic, struct test* test,
 
 static void test_label_arg( struct semantic* semantic, struct test* test,
    struct inline_asm_arg* arg ) {
-   struct list_iter i;
+   zbcx_ListIter i;
    zbcx_list_iterate( semantic->topfunc_test->labels, &i );
    while ( ! zbcx_list_end( &i ) ) {
       struct label* label = zbcx_list_data( &i );

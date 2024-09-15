@@ -45,7 +45,7 @@ static struct access* alloc_access( const char* name, struct pos pos );
 static void read_post_inc( struct parse* parse, struct expr_reading* reading );
 static void read_call( struct parse* parse, struct expr_reading* reading );
 static void read_call_args( struct parse* parse, struct expr_reading* reading,
-   struct list* args );
+   zbcx_List* args );
 static struct format_item* read_format_item_list( struct parse* parse );
 static struct format_item* read_format_item( struct parse* parse );
 static void init_format_cast( struct format_cast* cast );
@@ -881,7 +881,7 @@ static void read_call( struct parse* parse, struct expr_reading* reading ) {
 }
 
 static void read_call_args( struct parse* parse, struct expr_reading* reading,
-   struct list* args ) {
+   zbcx_List* args ) {
    while ( true ) {
       struct expr_reading arg;
       p_init_expr_reading( &arg, reading->in_constant, false, false, true );

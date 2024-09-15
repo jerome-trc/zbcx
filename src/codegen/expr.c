@@ -1593,7 +1593,7 @@ static void visit_aspec_call( struct codegen* codegen, struct result* result,
    // that are zero because the engine will provide those.
    int count = 0;
    int arg_number = 0;
-   struct list_iter i;
+   zbcx_ListIter i;
    zbcx_list_iterate( &call->args, &i );
    while ( ! zbcx_list_end( &i ) ) {
       struct expr* arg = zbcx_list_data( &i );
@@ -1651,7 +1651,7 @@ static void visit_aspec_call( struct codegen* codegen, struct result* result,
 
 static void visit_ext_call( struct codegen* codegen, struct result* result,
    struct call* call ) {
-   struct list_iter i;
+   zbcx_ListIter i;
    zbcx_list_iterate( &call->args, &i );
    while ( ! zbcx_list_end( &i ) ) {
       c_push_expr( codegen, zbcx_list_data( &i ) );
@@ -1666,7 +1666,7 @@ static void visit_ded_call( struct codegen* codegen, struct result* result,
    struct call* call ) {
    // Push arguments.
    struct param* param = call->func->params;
-   struct list_iter i;
+   zbcx_ListIter i;
    zbcx_list_iterate( &call->args, &i );
    while ( ! zbcx_list_end( &i ) ) {
       c_push_expr( codegen, zbcx_list_data( &i ) );
@@ -1737,7 +1737,7 @@ static void call_user_func( struct codegen* codegen, struct result* result,
 static void write_call_args( struct codegen* codegen, struct call* call ) {
    struct param* param = call->func->params;
    // Push arguments.
-   struct list_iter i;
+   zbcx_ListIter i;
    zbcx_list_iterate( &call->args, &i );
    while ( ! zbcx_list_end( &i ) ) {
       push_arg( codegen, param, zbcx_list_data( &i ) );
@@ -1810,7 +1810,7 @@ static void visit_sample_call( struct codegen* codegen, struct result* result,
    if ( zbcx_list_size( &call->args ) > 0 ) {
       int caller = c_alloc_script_var( codegen );
       c_update_indexed( codegen, STORAGE_LOCAL, caller, AOP_NONE );
-      struct list_iter i;
+      zbcx_ListIter i;
       zbcx_list_iterate( &call->args, &i );
       struct param* param = call->ref_func->params;
       while ( ! zbcx_list_end( &i ) ) {
@@ -1863,7 +1863,7 @@ static void call_format( struct codegen* codegen, struct result* result,
    if ( call->func->min_param > 0 ) {
       c_pcd( codegen, PCD_MOREHUDMESSAGE );
       int count = 0;
-      struct list_iter i;
+      zbcx_ListIter i;
       zbcx_list_iterate( &call->args, &i );
       while ( ! zbcx_list_end( &i ) ) {
          if ( count == call->func->min_param ) {
@@ -2008,7 +2008,7 @@ static void visit_internal_call( struct codegen* codegen,
 
 static void write_executewait( struct codegen* codegen, struct call* call,
    bool named_impl ) {
-   struct list_iter i;
+   zbcx_ListIter i;
    zbcx_list_iterate( &call->args, &i );
    c_push_expr( codegen, zbcx_list_data( &i ) );
    c_pcd( codegen, PCD_DUP );

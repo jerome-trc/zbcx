@@ -86,17 +86,17 @@ struct codegen {
    struct c_pcode_arg* free_pcode_args;
    struct indexed_string* assert_prefix;
    int runtime_index;
-   struct list used_strings;
-   struct list vars;    // Includes both scalar variables and arrays.
-   struct list scalars; // Includes only scalar variables.
-   struct list arrays;  // Includes only array variables.
-   struct list imported_vars;
-   struct list imported_scalars;
-   struct list imported_arrays;
-   struct list funcs;
+   zbcx_List used_strings;
+   zbcx_List vars;    // Includes both scalar variables and arrays.
+   zbcx_List scalars; // Includes only scalar variables.
+   zbcx_List arrays;  // Includes only array variables.
+   zbcx_List imported_vars;
+   zbcx_List imported_scalars;
+   zbcx_List imported_arrays;
+   zbcx_List funcs;
    struct {
-      struct list vars;
-      struct list dims;
+      zbcx_List vars;
+      zbcx_List dims;
       int index;
       int dim_counter;
       int size;

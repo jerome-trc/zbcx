@@ -20,7 +20,7 @@ static void init_func_record( struct func_record* record, struct func* func );
 static void alloc_param_indexes( struct func_record* func,
    struct param* param );
 static void alloc_funcscopevars_indexes( struct func_record* func,
-   struct list* vars );
+   zbcx_List* vars );
 static void visit_local_var( struct codegen* codegen, struct var* var );
 static void visit_world_var( struct codegen* codegen, struct var* var );
 static void write_multi_initz( struct codegen* codegen, struct var* var );
@@ -54,7 +54,7 @@ void c_write_user_code( struct codegen* codegen ) {
       write_null_handler( codegen );
    }
    // Scripts.
-   struct list_iter i;
+   zbcx_ListIter i;
    zbcx_list_iterate( &codegen->task->library_main->scripts, &i );
    while ( ! zbcx_list_end( &i ) ) {
       write_script( codegen, zbcx_list_data( &i ) );
@@ -179,8 +179,8 @@ static void alloc_param_indexes( struct func_record* func,
 }
 
 static void alloc_funcscopevars_indexes( struct func_record* func,
-   struct list* vars ) {
-   struct list_iter i;
+   zbcx_List* vars ) {
+   zbcx_ListIter i;
    zbcx_list_iterate( vars, &i );
    while ( ! zbcx_list_end( &i ) ) {
       struct var* var = zbcx_list_data( &i );

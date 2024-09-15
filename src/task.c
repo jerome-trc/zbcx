@@ -47,7 +47,7 @@ static struct indexed_string* intern_string( struct task* task,
    struct str_table* table, const char* value, int length, bool copy_value );
 static void init_ref( struct ref* ref, int type );
 
-void t_init( struct task* task, struct options* options, jmp_buf* bail,
+void t_init( struct task* task, const zbcx_Options* options, jmp_buf* bail,
    struct str* compiler_dir ) {
    task->options = options;
    task->err_file = NULL;
@@ -470,7 +470,7 @@ static void decode_pos( struct task* task, struct pos* pos,
 
 struct include_history_entry* t_decode_include_history_entry(
    struct task* task, int id ) {
-   struct list_iter i;
+   zbcx_ListIter i;
    zbcx_list_iterate( &task->include_history, &i );
    while ( ! zbcx_list_end( &i ) ) {
       struct include_history_entry* entry = zbcx_list_data( &i );
@@ -587,7 +587,7 @@ static bool identify_file_relative( struct task* task,
       }
    }
    // Try user-specified directories.
-   struct list_iter i;
+   zbcx_ListIter i;
    zbcx_list_iterate( &task->options->includes, &i );
    while ( ! zbcx_list_end( &i ) ) {
       char* include = zbcx_list_data( &i ); 

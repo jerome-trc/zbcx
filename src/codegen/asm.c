@@ -8,7 +8,7 @@ static void write_expr_arg( struct codegen* codegen,
 
 void p_visit_inline_asm( struct codegen* codegen,
    struct inline_asm* inline_asm ) {
-   struct list_iter i;
+   zbcx_ListIter i;
    zbcx_list_iterate( &inline_asm->args, &i );
    c_unoptimized_opc( codegen, inline_asm->opcode );
    while ( ! zbcx_list_end( &i ) ) {

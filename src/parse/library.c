@@ -42,7 +42,7 @@ static void read_namespace_path( struct parse* parse );
 static void read_namespace_member_list( struct parse* parse );
 static void read_namespace_member( struct parse* parse );
 static bool is_namespace( struct parse* parse );
-static void read_using( struct parse* parse, struct list* output,
+static void read_using( struct parse* parse, zbcx_List* output,
    bool block_scope );
 static struct using_dirc* alloc_using( struct pos* pos );
 static void read_using_item( struct parse* parse, struct using_dirc* dirc );
@@ -295,7 +295,7 @@ static bool is_namespace( struct parse* parse ) {
    return false;
 }
 
-static void read_using( struct parse* parse, struct list* output,
+static void read_using( struct parse* parse, zbcx_List* output,
    bool block_scope ) {
    struct using_dirc* dirc = alloc_using( &parse->tk_pos );
    dirc->force_local_scope = block_scope;
@@ -320,7 +320,7 @@ static void read_using( struct parse* parse, struct list* output,
    zbcx_list_append( output, dirc );
 }
 
-void p_read_local_using( struct parse* parse, struct list* output ) {
+void p_read_local_using( struct parse* parse, zbcx_List* output ) {
    read_using( parse, output, p_read_let( parse ) );
 }
 
@@ -705,7 +705,7 @@ static void read_library_name( struct parse* parse, struct pos* pos ) {
       p_bail( parse );
    }
    // Each library must have a unique name.
-   struct list_iter i;
+   zbcx_ListIter i;
    zbcx_list_iterate( &parse->task->libraries, &i );
    while ( ! zbcx_list_end( &i ) ) {
       struct library* lib = zbcx_list_data( &i );
@@ -752,7 +752,7 @@ static void add_library_link( struct parse* parse, const char* name,
    struct pos* pos ) {
    test_library_name( parse, pos, name, strlen( name ) );
    struct library_link* link = NULL;
-   struct list_iter i;
+   zbcx_ListIter i;
    zbcx_list_iterate( &parse->lib->links, &i );
    while ( ! zbcx_list_end( &i ) ) {
       struct library_link* other_link = zbcx_list_data( &i );
@@ -778,7 +778,7 @@ static void add_library_link( struct parse* parse, const char* name,
 }
 
 void p_create_cmdline_library_links( struct parse* parse ) {
-   struct list_iter i;
+   zbcx_ListIter i;
    zbcx_list_iterate( &parse->task->options->library_links, &i );
    while ( ! zbcx_list_end( &i ) ) {
       struct pos pos;
@@ -838,7 +838,7 @@ void p_add_unresolved( struct parse* parse, struct object* object ) {
 }
 
 static void perform_library_imports( struct parse* parse ) {
-   struct list_iter i;
+   zbcx_ListIter i;
    zbcx_list_iterate( &parse->lib->import_dircs, &i );
    while ( ! zbcx_list_end( &i ) ) {
       import_lib( parse, zbcx_list_data( &i ) );
@@ -877,7 +877,7 @@ static void init_library_request( struct library_request* request,
 static void load_imported_lib( struct parse* parse,
    struct library_request* request ) {
    // Return the library if it is already loaded.
-   struct list_iter i;
+   zbcx_ListIter i;
    zbcx_list_iterate( &parse->task->libraries, &i );
    while ( ! zbcx_list_end( &i ) ) {
       struct library* lib = zbcx_list_data( &i );
@@ -941,7 +941,7 @@ static void read_imported_lib( struct parse* parse,
 
 static void append_imported_lib( struct parse* parse, struct import_dirc* dirc,
    struct library* lib ) {
-   struct list_iter i;
+   zbcx_ListIter i;
    zbcx_list_iterate( &parse->lib->import_dircs, &i );
    while ( ! zbcx_list_end( &i ) ) {
       struct import_dirc* prev_dirc = zbcx_list_data( &i );
@@ -960,14 +960,14 @@ static void append_imported_lib( struct parse* parse, struct import_dirc* dirc,
 }
 
 static void determine_needed_library_links( struct parse* parse ) {
-   struct list_iter i;
+   zbcx_ListIter i;
    zbcx_list_iterate( &parse->task->library_main->links, &i );
    while ( ! zbcx_list_end( &i ) ) {
       struct library_link* link = zbcx_list_data( &i );
       // Ignore a self-referential link.
       if ( strcmp( link->name, parse->task->library_main->name.value ) != 0 ) {
          // If a library is #imported, a link for it is not necessary.
-         struct list_iter k;
+         zbcx_ListIter k;
          zbcx_list_iterate( &parse->task->library_main->dynamic, &k );
          while ( ! zbcx_list_end( &k ) ) {
             struct library* lib = zbcx_list_data( &k );
@@ -986,7 +986,7 @@ static void determine_needed_library_links( struct parse* parse ) {
 
 static void determine_hidden_objects( struct parse* parse ) {
    // Determine private objects.
-   struct list_iter i;
+   zbcx_ListIter i;
    zbcx_list_iterate( &parse->task->libraries, &i );
    while ( ! zbcx_list_end( &i ) ) {
       struct library* lib = zbcx_list_data( &i );
@@ -1004,7 +1004,7 @@ static void determine_hidden_objects( struct parse* parse ) {
 
 static void collect_private_objects( struct parse* parse, struct library* lib,
    struct ns_fragment* fragment ) {
-   struct list_iter i;
+   zbcx_ListIter i;
    zbcx_list_iterate( &fragment->objects, &i );
    while ( ! zbcx_list_end( &i ) ) {
       struct object* object = zbcx_list_data( &i );
@@ -1068,7 +1068,7 @@ static void collect_private_objects( struct parse* parse, struct library* lib,
 }
 
 static bool is_private_namespace( struct ns* ns ) {
-   struct list_iter i;
+   zbcx_ListIter i;
    zbcx_list_iterate( &ns->fragments, &i );
    while ( ! zbcx_list_end( &i ) ) {
       struct ns_fragment* fragment = zbcx_list_data( &i );
@@ -1081,7 +1081,7 @@ static bool is_private_namespace( struct ns* ns ) {
 }
 
 static void unbind_namespaces( struct parse* parse ) {
-   struct list_iter i;
+   zbcx_ListIter i;
    zbcx_list_iterate( &parse->task->namespaces, &i );
    while ( ! zbcx_list_end( &i ) ) {
       struct ns* ns = zbcx_list_data( &i );

@@ -137,7 +137,7 @@ void p_load_included_source( struct parse* parse, const char* file_path,
 }
 
 static void append_file( struct library* lib, struct file_entry* file ) {
-   struct list_iter i;
+   zbcx_ListIter i;
    zbcx_list_iterate( &lib->files, &i );
    while ( ! zbcx_list_end( &i ) ) {
       if ( zbcx_list_data( &i ) == file ) {
