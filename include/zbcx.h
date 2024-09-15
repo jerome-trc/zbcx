@@ -72,6 +72,9 @@ typedef struct _zbcx_Options {
 zbcx_Options zbcx_options_init(void);
 void zbcx_options_deinit(zbcx_Options*);
 
+/// Returns `true` if successful.
+bool zbcx_compile(const zbcx_Options*);
+
 #ifdef __cplusplus
 }
 #endif
