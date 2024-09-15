@@ -54,10 +54,8 @@ typedef struct _zbcx_Options {
 	bool acc_err;
 	bool acc_stats;
 	bool one_column;
-	bool help;
 	bool preprocess;
 	bool write_asserts;
-	bool show_version;
 	bool slade_mode;
 
 	struct {

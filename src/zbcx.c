@@ -1,3 +1,6 @@
+/// @file
+/// @brief Implements the public header.
+
 #include "zbcx.h"
 
 #include "cache/cache.h"
@@ -26,10 +29,8 @@ zbcx_Options zbcx_options_init(void) {
 	options.tab_size = 4;
 	options.acc_err = false;
 	options.acc_stats = false;
-	options.help = false;
 	options.preprocess = false;
 	options.write_asserts = true;
-	options.show_version = false;
 	options.cache.dir_path = NULL;
 	options.cache.lifetime = -1;
 	options.cache.enable = false;
@@ -85,115 +86,6 @@ static const char* get_script_type_label(int type) {
 	}
 }
 
-static void print_acc_stats(
-	struct task* task,
-	struct parse* parse,
-	struct codegen* codegen
-) {
-	// acc includes imported functions in the function count. This can cause
-	// confusion. We, instead, have two counts: one for functions in the library
-	// being compiled, and another for imported functions.
-	int imported_funcs = 0;
-	zbcx_ListIter i;
-	zbcx_list_iterate(&task->library_main->dynamic, &i);
-	while (!zbcx_list_end(&i)) {
-		struct library* lib = zbcx_list_data(&i);
-		zbcx_ListIter k;
-		zbcx_list_iterate(&lib->funcs, &k);
-		while (!zbcx_list_end(&k)) {
-			struct func* func = zbcx_list_data(&k);
-			struct func_user* impl = func->impl;
-			imported_funcs += (int)(impl->usage > 0);
-			zbcx_list_next(&k);
-		}
-		zbcx_list_next(&i);
-	}
-	t_diag(
-		task, DIAG_NONE,
-		"\"%s\":\n"
-		"  %d line%s (%d included)\n"
-		"  %d function%s (%d imported)\n"
-		"  %d script%s"
-		"",
-		task->library_main->file->path.value, parse->main_lib_lines,
-		parse->main_lib_lines == 1 ? "" : "s", parse->included_lines,
-		zbcx_list_size(&task->library_main->funcs),
-		zbcx_list_size(&task->library_main->funcs) == 1 ? "" : "s", imported_funcs,
-		zbcx_list_size(&task->library_main->scripts),
-		zbcx_list_size(&task->library_main->scripts) == 1 ? "" : "s"
-	);
-	int script_counts[SCRIPT_TYPE_TOTAL] = { 0 };
-	zbcx_list_iterate(&task->library_main->scripts, &i);
-	while (!zbcx_list_end(&i)) {
-		struct script* script = zbcx_list_data(&i);
-		++script_counts[script->type];
-		zbcx_list_next(&i);
-	}
-	for (int i = 0; i < ARRAY_SIZE(script_counts); ++i) {
-		if (script_counts[i] > 0) {
-			t_diag(
-				task, DIAG_NONE, "    %d %s", script_counts[i], get_script_type_label(i)
-			);
-		}
-	}
-	int map_vars = 0;
-	int world_vars = 0;
-	int world_arrays = 0;
-	int global_vars = 0;
-	int global_arrays = 0;
-	zbcx_list_iterate(&task->library_main->vars, &i);
-	while (!zbcx_list_end(&i)) {
-		struct var* var = zbcx_list_data(&i);
-		switch (var->storage) {
-		case STORAGE_MAP:
-			++map_vars;
-			break;
-		case STORAGE_WORLD:
-			if (var->desc == DESC_ARRAY) {
-				++world_arrays;
-			} else {
-				++world_vars;
-			}
-			break;
-		case STORAGE_GLOBAL:
-			if (var->desc == DESC_ARRAY) {
-				++global_arrays;
-			} else {
-				++global_vars;
-			}
-			break;
-		default:
-			break;
-		}
-		zbcx_list_next(&i);
-	}
-	t_diag(
-		task, DIAG_NONE,
-		"  %d global variable%s\n"
-		"  %d world variable%s\n"
-		"  %d map variable%s\n"
-		"  %d global array%s\n"
-		"  %d world array%s"
-		"",
-		global_vars, global_vars == 1 ? "" : "s", world_vars, world_vars == 1 ? "" : "s",
-		map_vars, map_vars == 1 ? "" : "s", global_arrays, global_arrays == 1 ? "" : "s",
-		world_arrays, world_arrays == 1 ? "" : "s"
-	);
-	t_diag(
-		task, DIAG_NONE, "  object \"%s\": %d bytes", task->options->object_file,
-		codegen->object_size
-	);
-}
-
-static void print_cache(struct task* task, struct cache* cache) {
-	if (cache) {
-		cache_print(cache);
-	} else {
-		t_diag(task, DIAG_ERR, "attempting to print cache, but cache is not enabled");
-		t_bail(task);
-	}
-}
-
 static void clear_cache(struct task* task, struct cache* cache) {
 	if (cache) {
 		cache_clear(cache);
@@ -219,15 +111,10 @@ static void compile_mainlib(struct task* task, struct cache* cache) {
 	struct codegen codegen;
 	c_init(&codegen, task);
 	c_publish(&codegen);
-	if (task->options->acc_stats) {
-		print_acc_stats(task, &parse, &codegen);
-	}
 }
 
 static void perform_selected_task(struct task* task, struct cache* cache) {
-	if (task->options->cache.print) {
-		print_cache(task, cache);
-	} else if (task->options->cache.clear) {
+	if (task->options->cache.clear) {
 		clear_cache(task, cache);
 	} else if (task->options->preprocess) {
 		preprocess(task);
