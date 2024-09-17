@@ -440,48 +440,9 @@ void zbcx_list_deinit( zbcx_List* list ) {
 
 #include <windows.h>
 
-bool c_read_fileid( struct fileid* fileid, const char* path ) {
-   HANDLE fh = CreateFile( path, GENERIC_READ, 0, NULL, OPEN_EXISTING, 0,
-      NULL );
-   if ( fh != INVALID_HANDLE_VALUE ) {
-      BY_HANDLE_FILE_INFORMATION detail;
-      if ( GetFileInformationByHandle( fh, &detail ) ) {
-         fileid->id_high = detail.nFileIndexHigh;
-         fileid->id_low = detail.nFileIndexLow;
-         CloseHandle( fh );
-         return true;
-      }
-      else {
-         CloseHandle( fh );
-         return false;
-      }
-   }
-   else {
-      return false;
-   }
-}
-
-bool c_same_fileid( struct fileid* a, struct fileid* b ) {
-   return ( a->id_high == b->id_high && a->id_low == b->id_low );
-}
-
 #else
 
 #include <sys/stat.h>
-
-bool c_read_fileid( struct fileid* fileid, const char* path ) {
-   struct stat buff;
-   if ( stat( path, &buff ) == -1 ) {
-      return false;
-   }
-   fileid->device = buff.st_dev;
-   fileid->number = buff.st_ino;
-   return true;
-}
-
-bool c_same_fileid( struct fileid* a, struct fileid* b ) {
-   return ( a->device == b->device && a->number == b->number );
-}
 
 #endif
 
@@ -499,27 +460,6 @@ int alignpad( int size, int align_size ) {
 }
 
 #if OS_WINDOWS
-
-bool c_read_full_path( const char* path, struct str* str ) {
-   const int max_path = MAX_PATH + 1;
-   if ( str->buffer_length < max_path ) { 
-      str_grow( str, max_path );
-   }
-   str->length = GetFullPathName( path, max_path, str->value, NULL );
-   if ( GetFileAttributes( str->value ) != INVALID_FILE_ATTRIBUTES ) {
-      int i = 0;
-      while ( str->value[ i ] ) {
-         if ( str->value[ i ] == '\\' ) {
-            str->value[ i ] = '/';
-         }
-         ++i;
-      }
-      return true;
-   }
-   else {
-      return false;
-   }
-}
 
 void fs_strip_trailing_pathsep( struct str* path ) {
    while ( path->length - 1 > 0 &&
@@ -597,7 +537,7 @@ bool fs_delete_file( const char* path ) {
 bool c_is_absolute_path( const char* path ) {
    return ( ( isalpha( path[ 0 ] ) && path[ 1 ] == ':' &&
       ( path[ 2 ] == '\\' || path[ 2 ] == '/' ) ) || path[ 0 ] == '\\' ||
-      path[ 0 ] == '/' ); 
+      path[ 0 ] == '/' );
 }
 
 #else
@@ -611,21 +551,6 @@ bool c_is_absolute_path( const char* path ) {
 #elif defined __linux__
 #include <linux/limits.h> // And on Linux it is in linux/limits.h
 #endif
-
-// Declared independently for toolchains which don't have it in their POSIX headers,
-// such as that of Zig as of 0.13.0.
-char *realpath(const char *restrict path, char *restrict resolved_path);
-
-bool c_read_full_path( const char* path, struct str* str ) {
-   str_grow( str, PATH_MAX + 1 );
-   if ( realpath( path, str->value ) ) {
-      str->length = strlen( str->value );
-      return true;
-   }
-   else {
-      return false;
-   }
-}
 
 void fs_strip_trailing_pathsep( struct str* path ) {
    while ( path->length - 1 > 0 &&
@@ -695,7 +620,7 @@ bool fs_delete_file( const char* path ) {
 }
 
 bool c_is_absolute_path( const char* path ) {
-   return ( path[ 0 ] == '/' ); 
+   return ( path[ 0 ] == '/' );
 }
 
 #endif
@@ -745,7 +670,7 @@ void fs_get_file_contents( const char* path, struct file_contents* contents ) {
 int bcc_stricmp (const char *s1, const char *s2)
 {
    unsigned char c1, c2;
-   
+
    do {
       c1 = (unsigned char) tolower(*s1);
       c2 = (unsigned char) tolower(*s2);
@@ -753,6 +678,6 @@ int bcc_stricmp (const char *s1, const char *s2)
       s1++;
       s2++;
    } while ( (c1 == c2) && (c2 != '\0') );
-   
+
    return c1 - c2;
 }

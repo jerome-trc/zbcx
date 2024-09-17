@@ -14,7 +14,6 @@
 
 struct file_entry {
    struct file_entry* next;
-   struct fileid file_id;
    struct str path;
    struct str full_path;
    int id;
@@ -23,7 +22,6 @@ struct file_entry {
 struct file_query {
    const char* given_path;
    struct str* path;
-   struct fileid fileid;
    struct file_entry* file;
    struct file_entry* offset_file;
    bool success;
@@ -1264,7 +1262,6 @@ struct task {
    struct ns* upmost_ns;
    struct str err_file_dir;
    zbcx_List include_history;
-   struct str* compiler_dir;
    struct str lib_dir;
    // The file printed in the last diagnostic.
    struct include_history_entry* last_diag_file;
@@ -1285,8 +1282,7 @@ struct task {
 #define DIAG_POS DIAG_FILE | DIAG_LINE | DIAG_COLUMN
 #define DIAG_POS_ERR DIAG_POS | DIAG_ERR
 
-void t_init( struct task* task, const zbcx_Options* options, jmp_buf* bail,
-   struct str* compiler_dir );
+void t_init( struct task* task, const zbcx_Options* options, jmp_buf* bail);
 void t_copy_name( struct name*, bool full, struct str* buffer );
 int t_full_name_length( struct name* );
 void t_print_name( struct name* );

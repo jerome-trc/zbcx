@@ -277,7 +277,7 @@ enum { SOURCE_BUFFER_SIZE = 16384 };
 
 struct source {
    struct file_entry* file;
-   FILE* fh;
+   zbcx_Io fh;
    struct source* prev;
    int file_entry_id;
    int line;

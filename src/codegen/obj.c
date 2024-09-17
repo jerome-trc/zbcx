@@ -43,7 +43,7 @@ void c_add_sized( struct codegen* codegen, const void* data, int size ) {
       memcpy( codegen->buffer->data + codegen->buffer->pos,
          ( const char* ) data + copied, segment_size );
       codegen->buffer->pos += segment_size;
-      if ( codegen->buffer->pos > codegen->buffer->used ) { 
+      if ( codegen->buffer->pos > codegen->buffer->used ) {
          codegen->buffer->used = codegen->buffer->pos;
       }
       copied += segment_size;
@@ -661,33 +661,14 @@ void c_seek_end( struct codegen* codegen ) {
 }
 
 void c_flush( struct codegen* codegen ) {
-   // Don't overwrite the object file unless it's an ACS object file, or the
-   // file doesn't exist. This is a basic check done to help prevent the user
-   // from accidently killing their other files. Maybe add a command-line
-   // argument to force the overwrite, like --force-object-overwrite?
-   FILE* fh = fopen( codegen->task->options->object_file, "rb" );
-   if ( fh ) {
-      char id[ 4 ];
-      bool proceed = false;
-      if ( fread( id, 1, 4, fh ) == 4 &&
-         id[ 0 ] == 'A' && id[ 1 ] == 'C' && id[ 2 ] == 'S' &&
-         ( id[ 3 ] == '\0' || id[ 3 ] == 'E' || id[ 3 ] == 'e' ) ) {
-         proceed = true;
-      }
-      fclose( fh );
-      if ( ! proceed ) {
-         t_diag( codegen->task, DIAG_ERR, "trying to overwrite unknown file: %s",
-            codegen->task->options->object_file );
-         t_bail( codegen->task );
-      }
-   }
    bool failure = false;
-   fh = fopen( codegen->task->options->object_file, "wb" );
-   if ( fh ) {
+   zbcx_Io fh = codegen->task->options->output;
+
+   if ( fh.vtable != NULL ) {
       struct buffer* buffer = codegen->buffer_head;
       int total_written = 0;
       while ( buffer ) {
-         int written = fwrite( buffer->data, 1, buffer->used, fh );
+         int written = fh.vtable->write(buffer->data, 1, buffer->used, fh.state);
          if ( written != buffer->used ) {
             failure = true;
             break;
@@ -696,14 +677,13 @@ void c_flush( struct codegen* codegen ) {
          buffer = buffer->next;
       }
       codegen->object_size = total_written;
-      fclose( fh );
+      fh.vtable->close(fh.state);
    }
    else {
       failure = true;
    }
    if ( failure ) {
-      t_diag( codegen->task, DIAG_ERR, "failed to write object file: %s",
-         codegen->task->options->object_file );
+      t_diag( codegen->task, DIAG_ERR, "failed to write object file output");
       t_bail( codegen->task );
    }
 }

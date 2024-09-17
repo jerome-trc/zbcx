@@ -782,7 +782,7 @@ static bool read_pragma_onoff (struct parse* parse)
 {
    p_read_preptk( parse );
    const char* text = parse->token->text;
-	
+
    if( bcc_stricmp("on", text) == 0 ) {
       return true;
    }
@@ -796,7 +796,7 @@ static bool read_pragma_onoff (struct parse* parse)
             "expecting on or off here");
       p_bail( parse );
    }
-   
+
    return false;
 }
 
@@ -808,7 +808,7 @@ static void read_pragma( struct parse* parse ) {
    if( bcc_stricmp( "raw", name ) == 0 ) {
       p_read_preptk( parse );
 	  const char* text = parse->token->text;
-	  
+
 	  if( bcc_stricmp( "define", text ) == 0 )
 	  {
 		 parse->preproc_pragmas.raw_define = read_pragma_onoff( parse );

@@ -70,12 +70,6 @@ int bcc_stricmp (const char *s1, const char *s2);
 #include <windows.h>
 #include <time.h>
 
-// NOTE: Volume information is not included. Maybe add it later.
-struct fileid {
-   int id_high;
-   int id_low;
-};
-
 #define NEWLINE_CHAR "\r\n"
 #define OS_PATHSEP "\\"
 
@@ -94,11 +88,6 @@ struct fs_timestamp {
 
 #include <sys/types.h>
 #include <sys/stat.h>
-
-struct fileid {
-   dev_t device;
-   ino_t number;
-};
 
 #define NEWLINE_CHAR "\n"
 #define OS_PATHSEP "/"
@@ -126,9 +115,6 @@ struct fs_result {
    int err;
 };
 
-bool c_read_fileid( struct fileid*, const char* path );
-bool c_same_fileid( struct fileid*, struct fileid* );
-bool c_read_full_path( const char* path, struct str* );
 void c_extract_dirname( struct str* );
 const char* c_get_file_ext( const char* path );
 

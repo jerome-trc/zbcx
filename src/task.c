@@ -35,9 +35,6 @@ static void decode_pos( struct task* task, struct pos* pos,
    struct include_history_entry** file, int* line, int* column );
 static const char* decode_filename( struct task* task,
    struct include_history_entry* entry );
-static bool identify_file( struct task* task, struct file_query* query );
-static bool identify_file_relative( struct task* task,
-   struct file_query* query );
 static struct file_entry* add_file( struct task* task,
    struct file_query* query );
 static struct file_entry* create_file_entry( struct task* task,
@@ -47,8 +44,7 @@ static struct indexed_string* intern_string( struct task* task,
    struct str_table* table, const char* value, int length, bool copy_value );
 static void init_ref( struct ref* ref, int type );
 
-void t_init( struct task* task, const zbcx_Options* options, jmp_buf* bail,
-   struct str* compiler_dir ) {
+void t_init( struct task* task, const zbcx_Options* options, jmp_buf* bail) {
    task->options = options;
    task->err_file = NULL;
    task->bail = bail;
@@ -118,7 +114,7 @@ void t_init( struct task* task, const zbcx_Options* options, jmp_buf* bail,
 
    str_init( &task->err_file_dir );
    str_copy( &task->err_file_dir, "", 0 );
-   t_update_err_file_dir( task, options->source_file );
+#warning "TODO: t_update_err_file_dir( task, options->source_file );"
    // TODO: Make this better.
    task->blank_name = task->upmost_ns->body;
 
@@ -127,10 +123,9 @@ void t_init( struct task* task, const zbcx_Options* options, jmp_buf* bail,
    add_internal_file( task, "<none>" );
    add_internal_file( task, "<compiler>" );
    add_internal_file( task, "<command-line>" );
-   task->compiler_dir = compiler_dir;
    // Setup default library include directory.
    str_init( &task->lib_dir );
-   str_append( &task->lib_dir, compiler_dir->value );
+   // str_append( &task->lib_dir, compiler_dir->value );
    str_append( &task->lib_dir, OS_PATHSEP );
    str_append( &task->lib_dir, "lib" );
 
@@ -313,7 +308,7 @@ void t_init_type_members( struct task* task ) {
       struct func_intern* impl = mem_alloc( sizeof( *impl ) );
       impl->id = list[ i ].id;
       func->impl = impl;
-      func->min_param = list[ i ].param; 
+      func->min_param = list[ i ].param;
       func->max_param = list[ i ].param;
       func->hidden = false;
    }
@@ -340,7 +335,7 @@ struct include_history_entry* t_alloc_include_history_entry(
 void t_diag( struct task* task, int flags, ... ) {
    va_list args;
    va_start( args, flags );
-   t_diag_args( task, flags, &args );
+   task->options->diag(task->options->context, flags, &args);
    va_end( args );
 }
 
@@ -513,7 +508,7 @@ const char* t_decode_pos_file( struct task* task, struct pos* pos ) {
    decode_pos( task, pos, &file, &line, &column );
    return decode_filename( task, file );
 }
- 
+
 void t_bail( struct task* task ) {
    longjmp( *task->bail, 1 );
 }
@@ -541,29 +536,6 @@ void t_init_file_query( struct file_query* query, struct file_entry* offset_file
    query->success = false;
 }
 
-void t_find_file( struct task* task, struct file_query* query ) {
-   struct str path;
-   str_init( &path );
-   query->path = &path;
-   if ( identify_file( task, query ) ) {
-      query->file = add_file( task, query );
-      query->success = true;
-   }
-   str_deinit( &path );
-}
-
-static bool identify_file( struct task* task, struct file_query* query ) {
-   // Absolute path.
-   if ( c_is_absolute_path( query->given_path ) ) {
-      str_append( query->path, query->given_path );
-      return c_read_fileid( &query->fileid, query->path->value );
-   }
-   // Relative path.
-   else {
-      return identify_file_relative( task, query );
-   }
-}
-
 static bool identify_file_relative( struct task* task,
    struct file_query* query ) {
    // Try directory of current file.
@@ -575,14 +547,14 @@ static bool identify_file_relative( struct task* task,
          str_append( query->path, OS_PATHSEP );
       }
       str_append( query->path, query->given_path );
-      if ( c_read_fileid( &query->fileid, query->path->value ) ) {
+       if ( task->options->fexists( task->options->context, query->path->value ) ) {
          return true;
       }
    }
    // Try path directly.
    else {
       str_append( query->path, query->given_path );
-      if ( c_read_fileid( &query->fileid, query->path->value ) ) {
+       if ( task->options->fexists( task->options->context, query->path->value ) ) {
          return true;
       }
    }
@@ -590,12 +562,12 @@ static bool identify_file_relative( struct task* task,
    zbcx_ListIter i;
    zbcx_list_iterate( &task->options->includes, &i );
    while ( ! zbcx_list_end( &i ) ) {
-      char* include = zbcx_list_data( &i ); 
+      char* include = zbcx_list_data( &i );
       str_clear( query->path );
       str_append( query->path, include );
       str_append( query->path, OS_PATHSEP );
       str_append( query->path, query->given_path );
-      if ( c_read_fileid( &query->fileid, query->path->value ) ) {
+      if ( task->options->fexists( task->options->context, query->path->value ) ) {
          return true;
       }
       zbcx_list_next( &i );
@@ -605,33 +577,65 @@ static bool identify_file_relative( struct task* task,
    str_append( query->path, task->lib_dir.value );
    str_append( query->path, OS_PATHSEP );
    str_append( query->path, query->given_path );
-   if ( c_read_fileid( &query->fileid, query->path->value ) ) {
-      return true;
-   }
+    if ( task->options->fexists( task->options->context, query->path->value ) ) {
+         return true;
+      }
    return false;
 }
 
-static struct file_entry* add_file( struct task* task,
-   struct file_query* query ) {
-   struct file_entry* entry = task->file_entries;
-   while ( entry ) {
-      if ( c_same_fileid( &query->fileid, &entry->file_id ) ) {
-         return entry;
-      }
-      entry = entry->next;
+static bool identify_file( struct task* task, struct file_query* query ) {
+   // Absolute path.
+   if ( c_is_absolute_path( query->given_path ) ) {
+      str_append( query->path, query->given_path );
+      return task->options->fexists(task->options->context, query->path->value);
    }
+   // Relative path.
+   else {
+      return identify_file_relative( task, query );
+   }
+}
+
+void t_find_file( struct task* task, struct file_query* query ) {
+   struct str path;
+   str_init( &path );
+   query->path = &path;
+   if ( identify_file( task, query ) ) {
+      query->file = add_file( task, query );
+      query->success = true;
+   }
+   str_deinit( &path );
+}
+
+static struct file_entry* add_file( struct task* task, struct file_query* query ) {
+   struct file_entry* entry = task->file_entries;
    return create_file_entry( task, query );
+}
+
+static bool read_full_path(
+   const zbcx_Options* options,
+   const char* path,
+   struct str* str
+) {
+   // TODO: make provider of `options` supply an allocation interface.
+   char* realpath = options->realpath(options->context, path);
+
+   if (realpath) {
+        str->value = realpath;
+        str->length = strlen(str->value);
+        return true;
+    } else {
+        return false;
+    }
 }
 
 static struct file_entry* create_file_entry( struct task* task,
    struct file_query* query ) {
    struct file_entry* entry = mem_alloc( sizeof( *entry ) );
    entry->next = NULL;
-   entry->file_id = query->fileid;
    str_init( &entry->path );
    str_append( &entry->path, query->path->value );
    str_init( &entry->full_path );
-   c_read_full_path( query->path->value, &entry->full_path );
+   read_full_path(task->options, query->path->value, &entry->full_path);
    entry->id = task->last_id;
    ++task->last_id;
    link_file_entry( task, entry );
@@ -1044,7 +1048,7 @@ int t_dim_size( struct dim* dim ) {
 const struct lang_limits* t_get_lang_limits( void ) {
    static const struct lang_limits limits =
       { MAX_WORLD_VARS, MAX_GLOBAL_VARS, 1000, 4, 32768, 32767, 32768 };
-	  
+
    return &limits;
 }
 

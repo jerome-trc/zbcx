@@ -230,8 +230,13 @@ static void load_module( struct parse* parse, struct request* request ) {
 }
 
 static void open_source_file( struct parse* parse, struct request* request ) {
-   FILE* fh = fopen( request->file->full_path.value, "rb" );
-   if ( ! fh ) {
+   zbcx_Io fh = parse->task->options->fopen(
+      parse->task->options->context,
+      request->file->full_path.value,
+      "rb"
+   );
+
+   if (fh.vtable == NULL) {
       request->err_open = true;
       return;
    }
@@ -256,7 +261,8 @@ static struct source* alloc_source( struct parse* parse ) {
    }
    // Initialize with default values.
    source->file = NULL;
-   source->fh = NULL;
+   source->fh.state = NULL;
+   source->fh.vtable = NULL;
    source->prev = NULL;
    reset_filepos( source );
    source->ch = '\0';
@@ -333,7 +339,7 @@ void p_add_altern_file_name( struct parse* parse,
 void p_pop_source( struct parse* parse ) {
    struct source_entry* entry = parse->source_entry;
    struct source* source = entry->source;
-   fclose( source->fh );
+   source->fh.vtable->close(source->fh.state);
    if ( entry->main ) {
       parse->main_lib_lines = source->line - LINE_OFFSET;
    }
@@ -1237,11 +1243,16 @@ static char read_ch( struct parse* parse ) {
    if ( source->buffer_pos >= SAFE_AMOUNT ) {
       size_t unread = SOURCE_BUFFER_SIZE - source->buffer_pos;
       memcpy( source->buffer, source->buffer + source->buffer_pos, unread );
-      size_t count = fread( source->buffer + unread,
-         sizeof( source->buffer[ 0 ] ), SOURCE_BUFFER_SIZE - unread,
-         source->fh );
+
+      size_t count = source->fh.vtable->read(
+        source->buffer + unread,
+        sizeof(source->buffer[ 0 ]),
+        SOURCE_BUFFER_SIZE - unread,
+        source->fh.state
+    );
+
       if ( count != SOURCE_BUFFER_SIZE - unread &&
-         ferror( source->fh ) != 0 ) {
+         source->fh.vtable->error(source->fh.state) != 0 ) {
          p_diag( parse, DIAG_ERR,
             "failed to read file: %s (%s)",
             parse->source->file->full_path.value, strerror( errno ) );
@@ -1270,7 +1281,7 @@ static char read_ch( struct parse* parse ) {
          ++parse->line;
       }
       // Windows newline character.
-     else if ( source->buffer[ source->buffer_pos + 1 ] == '\r' &&
+      else if ( source->buffer[ source->buffer_pos + 1 ] == '\r' &&
          source->buffer[ source->buffer_pos + 2 ] == '\n' ) {
          source->buffer_pos += 3;
          ++source->line;

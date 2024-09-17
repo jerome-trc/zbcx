@@ -19,23 +19,11 @@
 #define TAB_SIZE_MAX 100
 
 zbcx_Options zbcx_options_init(void) {
-	zbcx_Options options;
-	zbcx_list_init(&options.includes);
-	zbcx_list_init(&options.defines);
-	zbcx_list_init(&options.library_links);
-	options.source_file = NULL;
-	options.object_file = NULL;
+	zbcx_Options options = {0};
 	// Default tab size for now is 4, since it's a common indentation size.
 	options.tab_size = 4;
-	options.acc_err = false;
-	options.acc_stats = false;
-	options.preprocess = false;
 	options.write_asserts = true;
-	options.cache.dir_path = NULL;
 	options.cache.lifetime = -1;
-	options.cache.enable = false;
-	options.cache.clear = false;
-	options.cache.print = false;
 	return options;
 }
 
@@ -135,14 +123,10 @@ static void perform_task(struct task* task) {
 	}
 }
 
-static bool perform_action(
-	const zbcx_Options* options,
-	jmp_buf* root_bail,
-	struct str* compiler_dir
-) {
+static bool perform_action(const zbcx_Options* options, jmp_buf* root_bail) {
 	bool success = false;
 	struct task task;
-	t_init(&task, options, root_bail, compiler_dir);
+	t_init(&task, options, root_bail);
 	jmp_buf bail;
 	if (setjmp(bail) == 0) {
 		task.bail = &bail;
@@ -154,18 +138,17 @@ static bool perform_action(
 	return success;
 }
 
-bool zbcx_compile(const zbcx_Options* options) {
+zbcx_Result zbcx_compile(const zbcx_Options* options) {
 	mem_init(); // TODO: make this state local.
 	jmp_buf bail;
-	bool success = false;
+	zbcx_Result res = zbcx_res_setjmpfail;
 
 	if (setjmp(bail) == 0) {
-#error "TODO: NULL is a placeholder here"
-		if (perform_action(options, &bail, NULL)) {
-			success = true;
+		if (perform_action(options, &bail)) {
+			res = zbcx_res_ok;
 		}
 	}
 
 	mem_free_all();
-	return success;
+	return res;
 }

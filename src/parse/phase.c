@@ -91,7 +91,7 @@ static void run_phase( struct parse* parse ) {
 void p_diag( struct parse* parse, int flags, ... ) {
    va_list args;
    va_start( args, flags );
-   t_diag_args( parse->task, flags, &args );
+   parse->task->options->diag(parse->task->options->context, flags, &args);
    va_end( args );
 }
 

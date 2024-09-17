@@ -1386,7 +1386,7 @@ static void add_sweep_name( struct semantic* semantic, struct scope* scope,
 void s_diag( struct semantic* semantic, int flags, ... ) {
    va_list args;
    va_start( args, flags );
-   t_diag_args( semantic->task, flags, &args );
+   semantic->task->options->diag(semantic->task->options->context, flags, &args);
    va_end( args );
 }
 
